@@ -9,29 +9,42 @@ import (
 )
 
 var outdir string
+var outform string
 
 func init() {
 	flag.StringVar(&outdir, "output", ".", "Output directory")
+	flag.StringVar(&outform, "format", "bitextor", "Output format")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
+		fmt.Fprintf(flag.CommandLine.Output(),
+`Formats:
+  bitextor
+        Output format compatible with bitextor (circa June 2019)
+`)
 	}
 }
 
-func PreProcessFile(filename string, outdir string) (proc *WARCPreProcessor, err error) {
+func PreProcessFile(filename string) (proc *WARCPreProcessor, err error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	bw, err := NewBitextorWriter("./")
-	if err != nil {
-		return
+	var tw TextWriter
+	if outform == "bitextor" {
+		tw, err = NewBitextorWriter(outdir)
+		if err != nil {
+			return
+		}
+		defer tw.Close()
+	} else {
+		fmt.Fprintf(flag.CommandLine.Output(), "Unknown output format %s\n", outform)
+		os.Exit(1)
 	}
-	defer bw.Close()
 
-	proc, err = NewWARCPreProcessor(f, bw)
+	proc, err = NewWARCPreProcessor(f, tw)
 	if err != nil {
 		return
 	}
@@ -50,8 +63,13 @@ func main() {
 	}
 	filename := flag.Arg(0)
 
+	err := os.MkdirAll(outdir, 0755)
+	if err != nil {
+		log.Fatalf("os.MkdirAll(\"%s\"): %v", err)
+	}
+
 	start := time.Now()
-	proc, err := PreProcessFile(filename, "./")
+	proc, err := PreProcessFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
