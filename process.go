@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
-	"./cld2"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"sort"
 	"github.com/wolfgangmeyers/go-warc/warc"
+	"github.com/wwaites/giawarc/cld2"
 )
 
 // This structure implements the reading side of the WARC preprocessor.
