@@ -1,11 +1,22 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"time"
 )
+
+var outdir string
+
+func init() {
+	flag.StringVar(&outdir, "output", ".", "Output directory")
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+}
 
 func PreProcessFile(filename string, outdir string) (proc *WARCPreProcessor, err error) {
 	f, err := os.Open(filename)
@@ -31,7 +42,13 @@ func PreProcessFile(filename string, outdir string) (proc *WARCPreProcessor, err
 }
 
 func main() {
-	filename := os.Args[1]
+
+	flag.Parse()
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+	filename := flag.Arg(0)
 
 	start := time.Now()
 	proc, err := PreProcessFile(filename, "./")
