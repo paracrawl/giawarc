@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"sort"
 	"github.com/wolfgangmeyers/go-warc/warc"
@@ -48,7 +49,7 @@ func (p *WARCPreProcessor) Process() {
 // Callback from the WARC reader Iterate function
 func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	if err != nil {
-		// TODO log error here
+		log.Print("Error reading WARC record: %v", err)
 		return
 	}
 
@@ -69,7 +70,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	payload := wr.GetPayload()
 	resp, err := http.ReadResponse(bufio.NewReader(payload.GetReader()), nil)
 	if err != nil {
-		// TODO log error here
+		log.Print("Error reading HTTP response: %v", err)
 		return
 	}
 
@@ -86,49 +87,53 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	// here is where we would do, is it a PDF? transform to text and then continue,
 	// is it a doc? transform to text and continue
 
-	// If it is text...
-	if IsText(content_type) {
-		// record some statistics
-		p.TextRecords += 1
-		p.TextBytes   += content_length
-
-		// transform to UTF-8 and normalise, strip HTML stuff
-		body := CleanText(resp.Body, charset)
-
-		// read the resulting document into RAM for language detection
-		text, err := ioutil.ReadAll(body)
-		if err != nil {
-			// TODO log error
-			return
-		}
-
-		//text = strings.TrimSpace(text)
-		//text = strings.ReplaceAll(text, "\n", " ")
-		s_text := string(text)
-		lang, ok := cld2.DetectLang(s_text)
-		if !ok {
-			return
-		}
-
-		// record some statistics
-		p.LangRecords += 1
-		p.LangBytes   += content_length
-
-		uri, _ := wr.GetHeader().Get("WARC-Target-URI")
-
-		// send off a TextRecord to whatever will write it
-		rec := TextRecord{
-			RecordId: wr.GetHeader().GetRecordId(),
-			URI: uri,
-			ContentType: content_type,
-			Lang: lang,
-			Text: s_text,
-		}
-
-		p.tw.WriteText(&rec)
+	// If it is not text...
+	if !IsText(content_type) {
+		// nothing to do
+		return
 	}
+
+	// record some statistics
+	p.TextRecords += 1
+	p.TextBytes   += content_length
+
+	// transform to UTF-8 and normalise, strip HTML stuff
+	body := CleanText(resp.Body, charset)
+
+	// read the resulting document into RAM for language detection
+	text, err := ioutil.ReadAll(body)
+	if err != nil {
+		log.Print("Error reading HTTP response body: %v", err)
+		return
+	}
+
+	//text = strings.TrimSpace(text)
+	//text = strings.ReplaceAll(text, "\n", " ")
+	s_text := string(text)
+	lang, ok := cld2.DetectLang(s_text)
+	if !ok {
+		return
+	}
+
+	// record some statistics
+	p.LangRecords += 1
+	p.LangBytes   += content_length
+
+	uri, _ := wr.GetHeader().Get("WARC-Target-URI")
+
+	// send off a TextRecord to whatever will write it
+	rec := TextRecord{
+		RecordId: wr.GetHeader().GetRecordId(),
+		URI: uri,
+		ContentType: content_type,
+		Lang: lang,
+		Text: s_text,
+	}
+
+	p.tw.WriteText(&rec)
 }
 
+// Utility to get statistics about content types for printing out.
 func (p *WARCPreProcessor) ContentTypeStats() ContentStats {
 	cts := make(ContentStats, len(p.ContentCounts))
 	for k, v := range p.ContentCounts {
@@ -139,11 +144,14 @@ func (p *WARCPreProcessor) ContentTypeStats() ContentStats {
 	return cts
 }
 
+// A statistic about a content type
 type ContentStat struct {
 	ContentType string
 	Prevalence float64
 }
 
+// An array of content-type statistics, with a new name so that we
+// can sort it by prevalence
 type ContentStats []ContentStat
 
 func (cts ContentStats) Len() int {
