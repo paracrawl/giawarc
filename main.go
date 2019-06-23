@@ -12,8 +12,8 @@ var outdir string
 var outform string
 
 func init() {
-	flag.StringVar(&outdir, "output", ".", "Output directory")
-	flag.StringVar(&outform, "format", "bitextor", "Output format")
+	flag.StringVar(&outdir, "o", ".", "Output directory")
+	flag.StringVar(&outform, "f", "bitextor", "Output format")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -63,7 +63,7 @@ func main() {
 	}
 	filename := flag.Arg(0)
 
-	err := os.MkdirAll(outdir, 0755)
+	err := os.MkdirAll(outdir, os.ModePerm)
 	if err != nil {
 		log.Fatalf("os.MkdirAll(\"%s\"): %v", err)
 	}
