@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"github.com/wwaites/giawarc"
 )
 
 var outdir string
@@ -25,16 +26,16 @@ func init() {
 	}
 }
 
-func PreProcessFile(filename string) (proc *WARCPreProcessor, err error) {
+func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	var tw TextWriter
+	var tw giawarc.TextWriter
 	if outform == "bitextor" {
-		tw, err = NewBitextorWriter(outdir)
+		tw, err = giawarc.NewBitextorWriter(outdir)
 		if err != nil {
 			return
 		}
@@ -44,7 +45,7 @@ func PreProcessFile(filename string) (proc *WARCPreProcessor, err error) {
 		os.Exit(1)
 	}
 
-	proc, err = NewWARCPreProcessor(f, tw)
+	proc, err = giawarc.NewWARCPreProcessor(f, tw)
 	if err != nil {
 		return
 	}

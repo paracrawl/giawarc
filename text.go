@@ -1,4 +1,4 @@
-package main
+package giawarc
 
 // Lookup table for MIME types that suggest text
 var text_types map[string]bool

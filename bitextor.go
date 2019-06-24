@@ -1,4 +1,4 @@
-package main
+package giawarc
 
 import (
 	"compress/gzip"

@@ -15,7 +15,7 @@ Do not use a newer version than 1.10.
 
 Then do,
 
-    go get github.com/wwaites/giawarc
+    go get github.com/wwaites/giawarc/...
 
 which will result in the `giawarc` binary in `${HOME}/go/bin`. The binary
 should have no runtime dependencies that stop it being moved to any machine,
