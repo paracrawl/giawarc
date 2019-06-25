@@ -3,10 +3,10 @@ package giawarc
 import (
 	"bufio"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"sort"
+	"strings"
 	"github.com/wolfgangmeyers/go-warc/warc"
 	"github.com/wwaites/giawarc/cld2"
 )
@@ -49,7 +49,9 @@ func (p *WARCPreProcessor) Process() {
 // Callback from the WARC reader Iterate function
 func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	if err != nil {
-		log.Print("Error reading WARC record: %v", err)
+		if err != io.EOF {
+			log.Printf("Error reading WARC record: %v", err)
+		}
 		return
 	}
 
@@ -70,7 +72,13 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	payload := wr.GetPayload()
 	resp, err := http.ReadResponse(bufio.NewReader(payload.GetReader()), nil)
 	if err != nil {
-		log.Print("Error reading HTTP response: %v", err)
+		log.Printf("Error reading HTTP response: %v", err)
+		return
+	}
+
+	uri, _ := wr.GetHeader().Get("WARC-Target-URI")
+	// skip robots.txt
+	if strings.HasSuffix(uri, "robots.txt") {
 		return
 	}
 
@@ -98,39 +106,40 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	p.TextBytes   += content_length
 
 	// transform to UTF-8 and normalise, strip HTML stuff
-	body := CleanText(resp.Body, charset)
-
-	// read the resulting document into RAM for language detection
-	text, err := ioutil.ReadAll(body)
+	text, err := CleanText(resp.Body, charset)
 	if err != nil {
-		log.Print("Error reading HTTP response body: %v", err)
+		log.Printf("Error reading HTTP response body: %v", err)
 		return
 	}
 
 	//text = strings.TrimSpace(text)
 	//text = strings.ReplaceAll(text, "\n", " ")
-	s_text := string(text)
-	lang, ok := cld2.DetectLang(s_text)
+	lang, ok := cld2.DetectLang(text)
 	if !ok {
 		return
 	}
+
+	split     := SplitSentences(text, lang) // split into sentences
+	tidied    := CleanSpaces(split)         // clean up excess whitespace
 
 	// record some statistics
 	p.LangRecords += 1
 	p.LangBytes   += content_length
 
-	uri, _ := wr.GetHeader().Get("WARC-Target-URI")
+	recid := wr.GetHeader().GetRecordId()
+	recid = strings.TrimPrefix(recid, "<urn:uuid:")
+	recid = strings.TrimSuffix(recid, ">")
 
 	// send off a TextRecord to whatever will write it
 	rec := TextRecord{
-		RecordId: wr.GetHeader().GetRecordId(),
+		RecordId: recid,
 		URI: uri,
 		ContentType: content_type,
 		Lang: lang,
-		Text: s_text,
+		Text: tidied,
 	}
 
-	p.tw.WriteText(&rec)
+	err = p.tw.WriteText(&rec)
 }
 
 // Utility to get statistics about content types for printing out.

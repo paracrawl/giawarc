@@ -1,0 +1,51 @@
+
+#
+# Add NUMERIC_ONLY after the word for this function. This case is
+# Anything in this file, followed by a period, 
+# Cantonese (Chinese)
+# English/Euro-language given-name initials (appearing in
+# Numbers only. These should only induce breaks when followed by
+# a numeric sequence.
+# does NOT indicate an end-of-sentence marker.
+# mostly for the english "No." which can either be a sentence of its
+# news, periodicals, etc.)
+# own, or if followed by a number, a non-breaking prefix.
+A
+B
+C
+D
+E
+F
+G
+H
+I
+J
+K
+L
+M
+N
+No #NUMERIC_ONLY#
+Nr #NUMERIC_ONLY#
+O
+P
+Q
+R
+S
+T
+U
+V
+W
+X
+Y
+Z
+Ā
+Č
+Ē
+Ģ
+Ī
+Ķ
+Ļ
+Ņ
+Š
+Ū
+Ž

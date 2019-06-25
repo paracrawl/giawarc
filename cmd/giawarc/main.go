@@ -13,7 +13,7 @@ var outdir string
 var outform string
 
 func init() {
-	flag.StringVar(&outdir, "o", ".", "Output directory")
+	flag.StringVar(&outdir, "o", ".", "Output location")
 	flag.StringVar(&outform, "f", "bitextor", "Output format")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
@@ -22,6 +22,10 @@ func init() {
 `Formats:
   bitextor
         Output format compatible with bitextor (circa June 2019)
+  rocks
+        Concatenated gzipped pages indexed with RocksDB
+  rockslang
+        Concatenated gzipped pages split by language and indexed with RocksDB
 `)
 	}
 }
@@ -39,11 +43,22 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 		if err != nil {
 			return
 		}
-		defer tw.Close()
+	} else if outform == "gzip" {
+		tw, err = giawarc.NewZipWriter(outdir)
+		if err != nil {
+			return
+		}
+	} else if outform == "gzlang" {
+		m := func(o string) (giawarc.TextWriter, error) { return giawarc.NewZipWriter(o) }
+		tw, err = giawarc.NewLangWriter(outdir, m)
+		if err != nil {
+			return
+		}
 	} else {
 		fmt.Fprintf(flag.CommandLine.Output(), "Unknown output format %s\n", outform)
 		os.Exit(1)
 	}
+	defer tw.Close()
 
 	proc, err = giawarc.NewWARCPreProcessor(f, tw)
 	if err != nil {
@@ -64,11 +79,6 @@ func main() {
 	}
 	filename := flag.Arg(0)
 
-	err := os.MkdirAll(outdir, os.ModePerm)
-	if err != nil {
-		log.Fatalf("os.MkdirAll(\"%s\"): %v", err)
-	}
-
 	start := time.Now()
 	proc, err := PreProcessFile(filename)
 	if err != nil {
@@ -87,8 +97,10 @@ func main() {
 	fmt.Printf("elapsed time: %v\n", elapsed)
 	fmt.Printf("content types:\n")
 
+/*
 	cts := proc.ContentTypeStats()
 	for _, s := range cts {
 		fmt.Printf("    %v: %0.08f\n", s.ContentType, s.Prevalence)
 	}
+*/
 }

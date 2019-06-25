@@ -1,0 +1,655 @@
+
+#
+#  malonus
+#  poezija
+# (excluding I occasionally, but we leave it in)
+# Any single upper case letter  followed by a period is not a sentence ender
+# Anything in this file, followed by a period (and an upper-case word),
+# Biblija
+# Business, governmental, geographical terms
+# Day and month abbreviations
+# Generally lower-case.
+# Gerbiamasis
+# Indų
+# Initialis -- Džonas
+# Jo Eminencija
+# List of titles. These are often followed by upper-case names, but do
+# Pirmadienis Penktadienis
+# Special cases are included for prefixes that ONLY appear before 0-9 numbers.
+# Technical terms, abbreviations used in guidebooks, advertisments, etc.
+# add NUMERIC_ONLY after the word for this function
+# advokatas
+# aikštė
+# airiškai
+# akademikas
+# akligatvis
+# aktorius
+# alėja
+# amerikanizmas
+# anatomija
+# angl. angliskai
+# antspaudo vieta
+# apskritis
+# apygarda
+# arabų
+# asistentas
+# asmens kodas
+# asmenvardis
+# asmuo
+# astronomija
+# atsakingasis
+# atsiskaitomoji sąskaita
+# australiškai
+# automobilis
+# autorius
+# aviacija
+# bakalauras
+# baltarusių
+# banko kodas
+# biologija
+# botanika
+# buhalterija
+# burtai, burtažodis.
+# butas
+# buvęs, -usi
+# būdvardis
+# chemija
+# collectivum
+# conjunctivus, jungtukas
+# dab. dabartine
+# daiktavardis
+# dailininkas
+# daktaras (mokslų)
+# daugiskaita
+# dažnai
+# dekanas
+# dešinysis
+# dialektizmas
+# direktorius
+# dirigentas
+# docentas
+# does NOT indicate an end-of-sentence marker.
+# durpynas
+# dėstytojas
+# egzempliorius
+# eilutė
+# ekonomika
+# elektra
+# elektroninis
+# esamasis laikas
+# eufemizmas
+# ežeras
+# faksas
+# fakultetas
+# familiariai
+# farmacija
+# filologija
+# filosofija
+# finansai
+# fizika
+# fiziologija
+# folkloras
+# fonetika
+# fotografija
+# generolas
+# geodezija
+# geologija
+# geometrija
+# graikų
+# gydytojas
+# gyvenvietė
+# heraldika
+# hidrotechnika
+# inspektorius
+# inž inžinierius
+# ir panašiai
+# ir taip pat
+# ir taip toliau
+# ironiškai
+# ispanų
+# istorija
+# italų
+# japonų
+# juokaujamai
+# jūrininkystė
+# kaip antai
+# kairysis
+# kalbotyra
+# kalnas
+# kandidatas
+# kapitonas
+# karyba
+# kasyba
+# katedra
+# kinematografija
+# kitas
+# klasė
+# klausiamasis
+# knyga
+# knyginis
+# komercija
+# kompiuteris
+# korespondentas
+# kosmonautika
+# kulinarija
+# kunigas
+# kuopine
+# kyšulys
+# laikas
+# laikinai einantis pareigas
+# leitenantas
+# lingvistika
+# literatūrinis
+# logika
+# lotynų
+# m. menesis d. diena  g. gimes
+# magistrantas
+# magistras
+# majoras
+# matematika
+# mažybinis
+# medicina
+# medžioklė
+# menas
+# menkinamai
+# metalurgija
+# miestas
+# miestelis
+# milijardas
+# milijonas
+# mineralogija
+# mitologija
+# mokinys
+# mokslinis
+# mokslo metai
+# mokyklinis
+# mokytojas
+# moteris
+# muzikinis
+# mįslė
+# mūsų eros
+# naujasis
+# neigiamasis
+# nekaitomas
+# neologizmas
+# neteiktinas
+# niekinamai
+# not indicate sentence breaks
+# numeris
+# oficialus
+# optika
+# original
+# palygink
+# panašiai
+# paprastai
+# parlamentas
+# pasenęs žodis
+# patarlė
+# pavaduotojas
+# paveikslas
+# pavyzdžiui
+# pažodžiui
+# paštas
+# pašto dėžutė, abonentinė dėžutė
+# perkeltine
+# persona, asmuo
+# pietūs
+# pirmininkas
+# plentas
+# poetizmas
+# poligrafija
+# politika
+# ponas
+# prancūzų, prūsų
+# prekyba
+# prietaras
+# prieš Kristų
+# prieš mūsų erą
+# profesorius
+# prokuroras
+# prospektas
+# protokolas
+# psichologija
+# pulkininkas; pelkė
+# pusiasalis
+# radiotechnika
+# rajonas
+# raštų kalbos
+# redaktorius
+# religija
+# retai
+# rusų
+# rytai
+# savivaldybė
+# sekretorius
+# senasis
+# seniūnija, seniūnas
+# skaityk; skyrius
+# skersgatvis
+# skveras
+# skyrius
+# slengas, slavų
+# sovietinis
+# spauda; spaustuvė
+# specialistas
+# specialus
+# sritis
+# statyba
+# stotis
+# straipsnis
+# studentas
+# sudurtinis
+# sutrumpintas
+# suvalkiečių
+# sąsiuvinis
+# tai yra
+# technika
+# teigiamas
+# teisė
+# tekstilė
+# telefonas
+# teologija
+# tik vyriškosios, vakarai
+# tiražas
+# tūkstantis
+# upelis
+# upė
+# usually upper case letters are initials in a name
+# vadinamasis, -oji
+# vaikų
+# valsčius
+# vartojama
+# vedėjas
+# veiksmažodis
+# veterinarija
+# vidurinis
+# vienaskaita
+# viensėdis
+# vietininkas
+# vietovardis
+# viršininkas, viršaitis
+# vokiečių
+# vulgariai
+# vyresnysis
+# vyriausiasis, -ioji; vyras
+# zoologija
+# šachmatai
+# žemėlapis
+# žemės ūkis
+# šiaurė
+# šių metų
+# žiūrėk
+# škotiškai
+# įlanka
+# įnagininkas
+# šnekamoji
+# šnekamosios
+# įvairiomis reikšmėmis
+#Numbers only. These should only induce breaks when followed by a numeric sequence
+#This case is mostly for the english "No." which can either be a sentence of its own, or
+#if followed by a number, a non-breaking prefix
+A
+A.V
+Antr
+B
+Bal
+Birž
+C
+D
+Dr
+Dz
+Dž
+E
+Em.
+F
+G
+Geg
+Gerb
+Gruod
+H
+I
+Inž
+J
+Just
+K
+Ketv
+Kov
+Kr
+L
+Lapkr
+Liep
+M
+N
+No #NUMERIC_ONLY#
+Nr
+O
+P
+Penkt
+Pirm
+Pn
+Pr
+Prof
+Q
+R
+Rugpj
+Rugs
+S
+Saus
+Sekm
+Spal
+T
+Treč
+U
+V
+Vas
+Vt
+W
+X
+Y
+Z
+a
+a.d
+a.k
+adv
+air
+akad
+aklg
+akt
+al
+amer
+anat
+angl
+aps
+apskr
+apyg
+arab
+archeol
+archit
+asist
+asm
+asm.k
+asmv
+astr
+atsak
+atsisk
+austral
+aut
+av
+avd
+b
+b.k
+bažn
+bdv
+bibl
+biol
+bkl
+bot
+brt
+brus
+bt
+buh
+buv
+chem
+col
+con
+conj
+d
+dab
+dail
+dek
+dgs
+dial
+dipl
+dir
+dirig
+dktv
+doc
+dr
+drp
+dš
+džn
+dėst
+e
+egz
+eil
+ekon
+el
+esam
+etc
+euf
+ež
+fak
+faks
+fam
+farm
+filol
+filos
+fin
+fiz
+fiziol
+flk
+fon
+fot
+g
+gen
+geod
+geogr
+geol
+geom
+gerb
+gim
+glžk
+gr
+gram
+gv
+gyd
+habil
+her
+hidr
+ind
+insp
+inž
+iron
+isp
+ist
+istor
+it
+jap
+juok
+jūr
+k
+k.a
+kalb
+kand
+kar
+kas
+kat
+kin
+kl
+klaus
+kln
+kn
+knyg
+kom
+komp
+koresp
+kosm
+kpt
+kr
+kt
+kul
+kun
+kuop
+kyš
+l
+l.e.p
+lingv
+lit
+log
+lot
+ltn
+m
+m.e
+m.m
+malon
+mat
+maž
+med
+medž
+men
+menk
+metal
+meteor
+mgnt
+mgr
+min
+mit
+mjr
+mln
+mlrd
+mok
+moksl
+mokyt
+mot
+ms
+mst
+mstl
+muz
+mėn
+n
+neig
+neol
+niek
+nkt
+nr
+ntk
+ofic
+opt
+orig
+p
+p.d
+p.m.e
+pan
+parl
+pat
+pav
+pavad
+paž
+pirm
+pl
+plg
+plk
+poet
+poez
+poligr
+polit
+ppr
+pr
+pr.Kr
+pranc
+prek
+priet
+prk
+prof
+prok
+prot
+prs
+psich
+psn
+pss
+pvz
+pšt
+r
+rad
+red
+reikšm
+rel
+ret
+rus
+rš
+sav
+saviv
+sekr
+sen
+sk
+skg
+skv
+skyr
+sl
+sov
+sp
+spec
+sport
+sr
+st
+stat
+str
+stud
+sudurt
+sutr
+suv
+sąs
+sąsk
+t
+t.p
+t.t
+t.y
+teatr
+tech
+techn
+teig
+teis
+tekst
+tel
+teol
+tir
+tūkst
+up
+upl
+v
+vad
+vaik
+vart
+ved
+vet
+vid
+virš
+vksm
+vlsč
+vns
+vok
+vs
+vt
+vtv
+vulg
+vv
+vyr
+vyresn
+zool
+Ā
+Č
+Ē
+Ģ
+Ī
+Ķ
+Ļ
+Ņ
+Š
+š
+Ū
+ū
+Ž
+ž
+š.m
+ž.ū
+šach
+Šešt
+šiaur
+škot
+įl
+žml
+Įn
+šnek
+žr
+įv
+įv.reikšm

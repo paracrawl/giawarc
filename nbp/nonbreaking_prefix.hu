@@ -1,0 +1,99 @@
+
+# Month name abbreviations
+# Other abbreviations
+# add NUMERIC_ONLY after the word for this function
+#Anything in this file, followed by a period (and an upper-case word), does NOT indicate an end-of-sentence marker.
+#List of titles. These are often followed by upper-case names, but do not indicate sentence breaks
+#Numbers only. These should only induce breaks when followed by a numeric sequence
+#Special cases are included for prefixes that ONLY appear before 0-9 numbers.
+#This case is mostly for the english "No." which can either be a sentence of its own, or
+#any single upper case letter  followed by a period is not a sentence ender (excluding I occasionally, but we leave it in)
+#if followed by a number, a non-breaking prefix
+#usually upper case letters are initials in a name
+A
+Aug #NUMERIC_ONLY#
+B
+C
+Ca
+D
+De
+Dec #NUMERIC_ONLY#
+Dr
+Du
+E
+F
+Fax #NUMERIC_ONLY#
+Feb #NUMERIC_ONLY#
+G
+H
+I
+J
+Jan #NUMERIC_ONLY#
+Júl #NUMERIC_ONLY#
+Jún #NUMERIC_ONLY#
+K
+Kb
+L
+M
+Max
+Min
+Máj #NUMERIC_ONLY#
+Márc #NUMERIC_ONLY#
+N
+Nov #NUMERIC_ONLY#
+O
+Okt #NUMERIC_ONLY#
+P
+Pl
+Prof
+Q
+R
+S
+St
+Szept #NUMERIC_ONLY#
+Szt
+T
+Tel #NUMERIC_ONLY#
+U
+V
+Vö
+W
+X
+Y
+Z
+aug #NUMERIC_ONLY#
+ca
+de
+dec #NUMERIC_ONLY#
+dr
+du
+fax #NUMERIC_ONLY#
+feb #NUMERIC_ONLY#
+jan #NUMERIC_ONLY#
+júl #NUMERIC_ONLY#
+jún #NUMERIC_ONLY#
+kb
+max
+min
+máj #NUMERIC_ONLY#
+márc #NUMERIC_ONLY#
+nov #NUMERIC_ONLY#
+okt #NUMERIC_ONLY#
+pl
+prof
+szept #NUMERIC_ONLY#
+tel #NUMERIC_ONLY#
+vö
+Á
+Ápr #NUMERIC_ONLY#
+É
+Í
+Ó
+Ö
+Ú
+Ún
+Ü
+ápr #NUMERIC_ONLY#
+ún
+Ő
+Ű
