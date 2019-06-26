@@ -10,13 +10,13 @@ type cleanFixture struct {
 }
 
 var cleanTests = []cleanFixture{
-	{"  hello", "hello"},
-	{"hello  \tworld", "hello world"},
-	{"\n\nhello", "hello"},
-	{"hello \nworld", "hello\nworld"},
-	{"hello\n world", "hello\nworld"},
-	{"hello\r\nworld", "hello\nworld"},
-	{"hello\n\n\nworld", "hello\nworld"},
+	{"  hello", "hello\n"},
+	{"hello  \tworld", "hello world\n"},
+	{"\n\nhello", "hello\n"},
+	{"hello \nworld", "hello\nworld\n"},
+	{"hello\n world", "hello\nworld\n"},
+	{"hello\r\nworld", "hello\nworld\n"},
+	{"hello\n\n\n\nworld\n\nxyz", "hello\nworld\nxyz\n"},
 }
 
 func TestCleanSpace(t *testing.T) {

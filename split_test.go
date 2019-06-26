@@ -24,6 +24,7 @@ var splitTests = []splitFixture{
 	{"en", "10 Good morning Mr. Wu", "10 Good morning Mr. Wu"},
 	{"en", "11 I'm No. 1", "11 I'm No. 1"},
 	{"en", "12 No.", "12 No."},
+	{"en", "13 (Luke 7:1–10). First", "13 (Luke 7:1–10).\nFirst"},
 }
 
 func TestSplitSentences(t *testing.T) {

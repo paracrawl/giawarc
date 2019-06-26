@@ -4,7 +4,6 @@ import (
 	"github.com/wwaites/giawarc/nbp"
 	"strings"
 	"regexp"
-	"log"
 )
 
 var cjk_lang = map[string]bool {
@@ -12,14 +11,11 @@ var cjk_lang = map[string]bool {
 	"zh": true,
 }
 
-var ms_re, ds_re, end1_re, end2_re, end3_re *regexp.Regexp
+var end1_re, end2_re, end3_re *regexp.Regexp
 var cjk1_re, cjk2_re *regexp.Regexp
 var dword_re, acro_re, num_re *regexp.Regexp
 
 func init() {
-	ms_re = regexp.MustCompile(`[ \t\r]+`)
-	ds_re = regexp.MustCompile(`[\p{Zs}]*\n+[\p{Zs}]*`)
-
 	// See https://github.com/kpu/preprocess/blob/master/moses/ems/support/split-sentences.perl
 
 	// Non-period end of sentence markers (?!) followed by sentence starters.
@@ -69,13 +65,10 @@ func SplitSentences(s, lang string) string {
 			continue
 		}
 
-		log.Printf("%#v, %#v", s, parts)
-
 		// if a known honorific and not followed by extra punctuation do not break
 		if nb != nil {
 			_, ok := nb[parts[1]]
 			if ok {
-				log.Printf("%#v is honorific", parts[1])
 				buf.WriteString(" ")
 				continue
 			}

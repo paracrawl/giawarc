@@ -1,6 +1,7 @@
 package giawarc
 
 import (
+	"fmt"
 	"bufio"
 	"io"
 	"log"
@@ -122,6 +123,9 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	split     := SplitSentences(text, lang) // split into sentences
 	tidied    := CleanSpaces(split)         // clean up excess whitespace
 
+	if lang == "en" {
+		fmt.Printf("%#v\n", strings.Split(tidied, "\n"))
+	}
 	// record some statistics
 	p.LangRecords += 1
 	p.LangBytes   += content_length

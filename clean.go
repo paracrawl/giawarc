@@ -7,6 +7,7 @@ import (
 	"golang.org/x/text/unicode/norm"
 	"html"
 	"io"
+	"regexp"
 	"strings"
 )
 
@@ -17,8 +18,13 @@ var broken_content_types = map[string]string{
 }
 var policy *bluemonday.Policy
 
+var ms_re, ds_re *regexp.Regexp
+
 func init() {
 	policy = bluemonday.StrictPolicy()
+
+	ms_re = regexp.MustCompile(`[ \t\r\p{Zs}\x{c2a0}]+`)
+	ds_re = regexp.MustCompile(`[\p{Zs}]*[\x0a\x0b\x0c\x0d\p{Zl}\p{Zp}]+[\p{Zs}]*`)
 }
 
 func CleanContentType(content_type string) (string, string) {
@@ -66,8 +72,19 @@ func Recode(body io.Reader, charset string) io.Reader {
 func CleanSpaces(s string) string {
 	s = strings.TrimSpace(s)
 	s = ms_re.ReplaceAllLiteralString(s, " ")
-	s = ds_re.ReplaceAllLiteralString(s, "\n")
-	return s
+	var buf strings.Builder
+
+	for _, s := range(strings.Split(s, "\n")) {
+		s := strings.TrimSpace(s)
+		if len(s) == 0 {
+			continue
+		}
+		buf.WriteString(s)
+		buf.WriteString("\n")
+	}
+	//	s = ds_re.ReplaceAllLiteralString(s, "\n")
+	//	return s
+	return buf.String()
 }
 
 // Clean and sanitize the text, making sure the result is normalised

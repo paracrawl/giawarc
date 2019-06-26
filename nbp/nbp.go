@@ -2323,6 +2323,7 @@ var NBP = map[string]map[string]bool{
         "Ens": true,
         "F": true,
         "Feb": true,
+        "Fr": true,
         "G": true,
         "Gen": true,
         "Gov": true,
