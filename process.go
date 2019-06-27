@@ -120,8 +120,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		return
 	}
 
-	split     := SplitSentences(text, lang) // split into sentences
-	tidied    := CleanSpaces(split)         // clean up excess whitespace
+	tidied    := CleanSpaces(text)         // clean up excess whitespace
 
 	if lang == "en" {
 		fmt.Printf("%#v\n", strings.Split(tidied, "\n"))
