@@ -87,21 +87,37 @@ func CleanSpaces(s string) string {
 	return buf.String()
 }
 
+func FixInvalidUtf8(reader io.Reader) (string, error) {
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(reader)
+	if err != nil {
+		return "", err
+	}
+
+	var str strings.Builder
+	// range has a neat side-effect of cleaning invalid utf-8
+	for _, r := range buf.String() {
+		_, err = str.WriteRune(r)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return str.String(), nil
+}
+
 // Clean and sanitize the text, making sure the result is normalised
 // UTF-8 free of any HTML markup
 func CleanText(reader io.Reader, charset string) (string, error) {
 
-	sanitized := policy.SanitizeReader(reader) // strip out any HTML crap
-	encoded   := Recode(sanitized, charset)       // transform to UTF-8
-
-	var buf bytes.Buffer
-	_, err := buf.ReadFrom(encoded)
+	sanitized  := policy.SanitizeReader(reader) // strip out any HTML crap
+	encoded    := Recode(sanitized, charset)    // transform to UTF-8
+	valid, err := FixInvalidUtf8(encoded)     	// make sure all UTF-8 is valid
 	if err != nil {
 		return "", err
 	}
-	unescaped := html.UnescapeString(buf.String()) // take care of html &xx;
+	normed     := norm.NFKC.String(valid)       // normalise UTF-8
+	unescaped  := html.UnescapeString(normed)   // take care of html &xx;
 
-	normed    := norm.NFKC.String(unescaped)       // normalise UTF-8
-
-	return normed, nil
+	return unescaped, nil
 }
