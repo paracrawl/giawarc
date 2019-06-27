@@ -23,7 +23,7 @@ func NewLangWriter(outdir string, maker func(string) (TextWriter, error)) (tw Te
 	return
 }
 
-func (lw *LangWriter) WriteText(page *TextRecord) (err error) {
+func (lw *LangWriter) WriteText(page *TextRecord) (n int, err error) {
 	w, ok := lw.writers[page.Lang]
 	if !ok {
 		w, err = lw.maker(path.Join(lw.outdir, page.Lang))
@@ -33,7 +33,7 @@ func (lw *LangWriter) WriteText(page *TextRecord) (err error) {
 		lw.writers[page.Lang] = w
 	}
 
-	err = w.WriteText(page)
+	n, err = w.WriteText(page)
 	return
 }
 

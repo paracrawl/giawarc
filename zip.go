@@ -3,7 +3,7 @@ package giawarc
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/gob"
+	"fmt"
 	"os"
 )
 
@@ -26,31 +26,32 @@ func NewZipWriter(out string) (z ZipWriter, err error) {
 	return
 }
 
-func (zw ZipWriter) WriteText(page *TextRecord) (err error) {
+func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 	var buf bytes.Buffer
 	z := gzip.NewWriter(&buf)
 
 	z.Name = page.RecordId
 
-	md := []string{page.URI, page.ContentType, page.Lang}
-	var meta bytes.Buffer
-	enc := gob.NewEncoder(&meta)
-	err = enc.Encode(md)
-	if err != nil {
-		return
-	}
-	z.Extra = meta.Bytes()
+	fmt.Fprintf(z, "Content-Location: %s\n", page.URI)
+	fmt.Fprintf(z, "Content-Type: %s\n", page.ContentType)
+	fmt.Fprintf(z, "Content-Language: %s\n", page.Lang)
+	fmt.Fprintf(z, "Content-Length: %d\n", len(page.Text))
+	fmt.Fprintf(z, "Date: %s\n", page.Date)
+	fmt.Fprintf(z, "X-WARC-Record-ID: <urn:uuid:%s>\n", page.RecordId)
+	fmt.Fprintf(z, "X-WARC-Filename: %s\n", page.Source)
+	fmt.Fprintf(z, "\n")
 
 	_, err = z.Write([]byte(page.Text))
 	if err != nil {
 		return
 	}
+	fmt.Fprintf(z, "\n")
 
 	err = z.Close()
 	if err != nil {
 		return
 	}
 
-	_, err = zw.Write(buf.Bytes())
+	n, err = zw.Write(buf.Bytes())
 	return
 }

@@ -80,7 +80,7 @@ func NewBitextorWriter(outdir string) (tw TextWriter, err error) {
 	return BitextorWriter{mime: mime, lang: lang, url: url, plain: plain}, nil
 }
 
-func (bw BitextorWriter) WriteText(text *TextRecord) (err error) {
+func (bw BitextorWriter) WriteText(text *TextRecord) (n int, err error) {
 	if err = WriteLine(bw.mime, text.ContentType); err != nil {
 		return
 	}

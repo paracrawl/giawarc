@@ -16,6 +16,7 @@ type WARCPreProcessor struct {
 	wf *warc.WARCFile
 	tw TextWriter
 
+	Filename string
 	TextRecords int  // records claiming to be text
 	LangRecords int  // records where we can tell the language
 	TotalRecords int // total records
@@ -55,6 +56,12 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		return
 	}
 
+	warc_type := wr.GetHeader().GetType()
+	if warc_type == "warcinfo" {
+		p.Filename, _ = wr.GetHeader().Get("WARC-Filename")
+		log.Printf("Processing %v", p.Filename)
+	}
+
 	// content type of the WARC record not the payload
 	content_type, _ := wr.GetHeader().Get("Content-Type")
 	if content_type != "application/http; msgtype=response" {
@@ -63,6 +70,8 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	}
 
 	content_length := wr.GetHeader().GetContentLength()
+
+	date, _ := wr.GetHeader().Get("WARC-Date")
 
 	// record some statistics
 	p.TotalRecords += 1
@@ -129,6 +138,8 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 	// send off a TextRecord to whatever will write it
 	rec := TextRecord{
+		Source: p.Filename,
+		Date: date,
 		RecordId: recid,
 		URI: uri,
 		ContentType: content_type,
@@ -136,7 +147,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		Text: tidied,
 	}
 
-	err = p.tw.WriteText(&rec)
+	_, err = p.tw.WriteText(&rec)
 }
 
 // Utility to get statistics about content types for printing out.

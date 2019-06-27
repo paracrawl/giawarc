@@ -4,6 +4,8 @@ package giawarc
 var text_types map[string]bool
 
 type TextRecord struct {
+	Source string
+	Date string
 	RecordId string
 	URI string
 	ContentType string
@@ -12,7 +14,7 @@ type TextRecord struct {
 }
 
 type TextWriter interface {
-	WriteText(*TextRecord) error
+	WriteText(*TextRecord) (int, error)
 	Close() error
 }
 
@@ -20,6 +22,7 @@ func init() {
 	text_types = map[string]bool {
 		"text/plain": true,
 		"text/html": true,
+		"application/xml": true,
 	}
 }
 
