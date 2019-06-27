@@ -2,7 +2,7 @@ package giawarc
 
 import (
 	"bytes"
-	"github.com/microcosm-cc/bluemonday"
+//	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/text/encoding/ianaindex"
 	"golang.org/x/text/unicode/norm"
 	"html"
@@ -16,12 +16,12 @@ var broken_content_types = map[string]string{
 	"text": "text/plain",
 	"text/plan": "text/plain",
 }
-var policy *bluemonday.Policy
+//var policy *bluemonday.Policy
 
 var ms_re, ds_re *regexp.Regexp
 
 func init() {
-	policy = bluemonday.StrictPolicy()
+//	policy = bluemonday.StrictPolicy()
 
 	ms_re = regexp.MustCompile(`[ \t\r\p{Zs}\x{c2a0}]+`)
 	ds_re = regexp.MustCompile(`[\p{Zs}]*[\x0a\x0b\x0c\x0d\p{Zl}\p{Zp}]+[\p{Zs}]*`)
@@ -110,7 +110,11 @@ func FixInvalidUtf8(reader io.Reader) (string, error) {
 // UTF-8 free of any HTML markup
 func CleanText(reader io.Reader, charset string) (string, error) {
 
-	sanitized  := policy.SanitizeReader(reader) // strip out any HTML crap
+	//	sanitized  := policy.SanitizeReader(reader) // strip out any HTML crap
+	sanitized, err  := HtmlToText(reader)
+	if err != nil {
+		return "", err
+	}
 	encoded    := Recode(sanitized, charset)    // transform to UTF-8
 	valid, err := FixInvalidUtf8(encoded)     	// make sure all UTF-8 is valid
 	if err != nil {
