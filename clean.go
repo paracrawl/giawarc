@@ -91,17 +91,17 @@ func CleanSpaces(s string) string {
 // UTF-8 free of any HTML markup
 func CleanText(reader io.Reader, charset string) (string, error) {
 
-	encoded   := Recode(reader, charset)       // transform to UTF-8
-	normed    := norm.NFKC.Reader(encoded)     // normalise UTF-8
-	sanitized := policy.SanitizeReader(normed) // strip out any HTML crap
+	sanitized := policy.SanitizeReader(reader) // strip out any HTML crap
+	encoded   := Recode(sanitized, charset)       // transform to UTF-8
 
 	var buf bytes.Buffer
-	_, err := buf.ReadFrom(sanitized)
+	_, err := buf.ReadFrom(encoded)
 	if err != nil {
 		return "", err
 	}
-
 	unescaped := html.UnescapeString(buf.String()) // take care of html &xx;
 
-	return unescaped, nil
+	normed    := norm.NFKC.String(unescaped)       // normalise UTF-8
+
+	return normed, nil
 }
