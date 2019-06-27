@@ -179,7 +179,7 @@ static inline bool InStateZero_2(const UTF8ReplaceObj_2* st,
 uint8 UTF8GenericProperty(const UTF8PropObj* st,
                           const uint8** src,
                           int* srclen) {
-  if (*srclen <= 0 || *srclen > 4) {
+  if (*srclen <= 0) {
     return 0;
   }
 
@@ -271,7 +271,7 @@ bool UTF8HasGenericProperty(const UTF8PropObj& st, const char* src) {
 uint8 UTF8GenericPropertyBigOneByte(const UTF8PropObj* st,
                           const uint8** src,
                           int* srclen) {
-  if (*srclen <= 0 || *srclen > 4) {
+  if (*srclen <= 0) {
     return 0;
   }
 
@@ -362,7 +362,7 @@ bool UTF8HasGenericPropertyBigOneByte(const UTF8PropObj& st, const char* src) {
 uint8 UTF8GenericPropertyTwoByte(const UTF8PropObj_2* st,
                           const uint8** src,
                           int* srclen) {
-  if (*srclen <= 0 || *srclen > 4) {
+  if (*srclen <= 0) {
     return 0;
   }
 
