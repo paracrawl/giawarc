@@ -44,7 +44,7 @@ static const int kMinGramCount = 3;
 static const int kMaxGramCount = 16;
 
 static const int UTFmax = 4;        // Max number of bytes in a UTF-8 character
-  /*
+
   // 1 to skip ASCII space, vowels AEIOU aeiou and UTF-8 continuation bytes 80-BF
   static const uint8 kSkipSpaceVowelContinue[256] = {
     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
@@ -70,7 +70,7 @@ static const int UTFmax = 4;        // Max number of bytes in a UTF-8 character
     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
   };
-  */
+
 
   // Always advances one UTF-8 character
   static const uint8 kAdvanceOneChar[256] = {
@@ -85,7 +85,6 @@ static const int UTFmax = 4;        // Max number of bytes in a UTF-8 character
     3,3,3,3,3,3,3,3, 3,3,3,3,3,3,3,3, 4,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,
   };
 
-  /*
   // Advances *only* on space (or illegal byte)
   static const uint8 kAdvanceOneCharSpace[256] = {
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
@@ -98,7 +97,7 @@ static const int UTFmax = 4;        // Max number of bytes in a UTF-8 character
     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
   };
-  */
+
 
 // Routines to access a hash table of <key:wordhash, value:probs> pairs
 // Buckets have 4-byte wordhash for sizes < 32K buckets, but only
