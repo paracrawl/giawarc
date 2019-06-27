@@ -81,7 +81,7 @@ void OffsetMap::Printmap(const char* filename) {
   Flush();    // Make sure any pending entry gets printed
   fprintf(fout, "Offsetmap: %d bytes\n", static_cast<int>(diffs_.size()));
   for (int i = 0; i < static_cast<int>(diffs_.size()); ++i) {
-    fprintf(fout, "%c%02d ", "&=+-"[OpPart(diffs_[i])], LenPart(diffs_[i]));
+    fprintf(fout, "%c%02d ", "&=+-"[static_cast<int>(OpPart(diffs_[i]))], LenPart(diffs_[i]));
     if ((i % 20) == 19) {fprintf(fout, "\n");}
   }
   fprintf(fout, "\n");
@@ -207,7 +207,7 @@ void OffsetMap::Emit(MapOp op, int len) {
 
 void OffsetMap::DumpString() {
   for (int i = 0; i < static_cast<int>(diffs_.size()); ++i) {
-    fprintf(stderr, "%c%02d ", "&=+-"[OpPart(diffs_[i])], LenPart(diffs_[i]));
+    fprintf(stderr, "%c%02d ", "&=+-"[static_cast<int>(OpPart(diffs_[i]))], LenPart(diffs_[i]));
   }
   fprintf(stderr, "\n");
 

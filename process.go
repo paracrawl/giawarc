@@ -112,8 +112,6 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		return
 	}
 
-	//text = strings.TrimSpace(text)
-	//text = strings.ReplaceAll(text, "\n", " ")
 	lang, ok := cld2.DetectLang(text)
 	if !ok {
 		return

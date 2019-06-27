@@ -174,23 +174,23 @@ extern const short kAvgDeltaOctaScore[];
 #endif // #ifdef CLD2_DYNAMIC_MODE
 
 
-static const bool FLAGS_cld_no_minimum_bytes = false;
+  //static const bool FLAGS_cld_no_minimum_bytes = false;
 static const bool FLAGS_cld_forcewords = true;
 static const bool FLAGS_cld_showme = false;
-static const bool FLAGS_cld_echotext = true;
+  //static const bool FLAGS_cld_echotext = true;
 static const int32 FLAGS_cld_textlimit = 160;
 static const int32 FLAGS_cld_smoothwidth = 20;
-static const bool FLAGS_cld_2011_hints = true;
+  //static const bool FLAGS_cld_2011_hints = true;
 static const int32 FLAGS_cld_max_lang_tag_scan_kb = 8;
 
 static const bool FLAGS_dbgscore = false;
 
 
-static const int kLangHintInitial = 12;  // Boost language by N initially
-static const int kLangHintBoost = 12;    // Boost language by N/16 per quadgram
+  //static const int kLangHintInitial = 12;  // Boost language by N initially
+  //static const int kLangHintBoost = 12;    // Boost language by N/16 per quadgram
 
-static const int kShortSpanThresh = 32;       // Bytes
-static const int kMaxSecondChanceLen = 1024;  // Look at first 1K of short spans
+  //static const int kShortSpanThresh = 32;       // Bytes
+  //static const int kMaxSecondChanceLen = 1024;  // Look at first 1K of short spans
 
 static const int kCheapSqueezeTestThresh = 4096;  // Only look for squeezing
                                                   // after this many text bytes
@@ -215,7 +215,7 @@ static const int kDefaultWordSpan = 256;      // Scan at least this many initial
                                               // bytes with word scoring
 static const int kReallyBigWordSpan = 9999999;  // Forces word scoring all text
 
-static const int kMinReliableSeq = 50;      // Record in seq if >= 50% reliable
+  //static const int kMinReliableSeq = 50;      // Record in seq if >= 50% reliable
 
 static const int kPredictionTableSize = 4096;   // Must be exactly 4096 for
                                                 // cheap compressor
@@ -967,7 +967,7 @@ void RemoveExtendedLanguages(DocTote* doc_tote) {
 static const int kMinReliableKeepPercent = 41;  // Remove lang if reli < this
 
 // For Tier3 languages, require a minimum number of bytes to be first-place lang
-static const int kGoodFirstT3MinBytes = 24;         // <this => no first
+//static const int kGoodFirstT3MinBytes = 24;         // <this => no first
 
 // Move bytes for unreliable langs to another lang or UNKNOWN
 // doc_tote is sorted, so cannot Add
@@ -1389,7 +1389,7 @@ bool IsEFIGS(Language lang) {
 // For Tier3 languages, require more bytes of text to override
 // the first-place language
 static const int kGoodSecondT1T2MinBytes = 15;        // <this => no second
-static const int kGoodSecondT3MinBytes = 128;         // <this => no second
+  //static const int kGoodSecondT3MinBytes = 128;         // <this => no second
 
 // Calculate a single summary language for the document, and its reliability.
 // Returns language3[0] or language3[1] or ENGLISH or UNKNOWN_LANGUAGE
@@ -1437,7 +1437,7 @@ void CalcSummaryLang(DocTote* doc_tote, int total_text_bytes,
   int second_bytes = (total_text_bytes * percent3[active_slot[1]]) / 100;
   // Require more bytes of text for Tier3 languages
   int minbytesneeded = kGoodSecondT1T2MinBytes;
-  int plang_second = PerScriptNumber(ULScript_Latin, language3[active_slot[1]]);
+  //int plang_second = PerScriptNumber(ULScript_Latin, language3[active_slot[1]]);
 
   if ((language3[active_slot[0]] == ENGLISH) &&
       (language3[active_slot[1]] != ENGLISH) &&
@@ -1758,15 +1758,15 @@ Language DetectLanguageSummaryV2(
   ApplyHints(buffer, buffer_length, is_plain_text, cld_hints, &scoringcontext);
 
   // Four individual script totals, Latin, Han, other2, other3
-  int next_other_tote = 2;
-  int tote_num = 0;
+  //int next_other_tote = 2;
+  //int tote_num = 0;
 
   // Four totes for up to four different scripts pending at once
   Tote totes[4];                  // [0] Latn  [1] Hani  [2] other  [3] other
-  bool tote_seen[4] = {false, false, false, false};
-  int tote_grams[4] = {0, 0, 0, 0};     // Number in partial chunk
-  ULScript tote_script[4] =
-    {ULScript_Latin, ULScript_Hani, ULScript_Common, ULScript_Common};
+  //bool tote_seen[4] = {false, false, false, false};
+  //int tote_grams[4] = {0, 0, 0, 0};     // Number in partial chunk
+  //ULScript tote_script[4] =
+  //  {ULScript_Latin, ULScript_Hani, ULScript_Common, ULScript_Common};
 
   // Loop through text spans in a single script
   ScriptScanner ss(buffer, buffer_length, is_plain_text);
@@ -1784,8 +1784,8 @@ Language DetectLanguageSummaryV2(
   int textlimit = FLAGS_cld_textlimit << 10;    // in KB
   if (textlimit == 0) {textlimit = 0x7fffffff;}
 
-  int advance_by = 2;                   // Advance 2 bytes
-  int advance_limit = textlimit >> 3;   // For first 1/8 of max document
+  //int advance_by = 2;                   // Advance 2 bytes
+  //int advance_limit = textlimit >> 3;   // For first 1/8 of max document
 
   int initial_word_span = kDefaultWordSpan;
   if (FLAGS_cld_forcewords) {
@@ -1798,11 +1798,11 @@ Language DetectLanguageSummaryV2(
   int chunksizequads = FLAGS_cld_smoothwidth;
   chunksizequads = minint(maxint(chunksizequads, kMinChunkSizeQuads),
                                kMaxChunkSizeQuads);
-  int chunksizeunis = (chunksizequads * 5) >> 1;
+  //int chunksizeunis = (chunksizequads * 5) >> 1;
 
   // Varying short-span limit doesn't work well -- skips too much beyond 20KB
   // int spantooshortlimit = advance_by * FLAGS_cld_smoothwidth;
-  int spantooshortlimit = kShortSpanThresh;
+  //int spantooshortlimit = kShortSpanThresh;
 
   // For debugging only. Not thread-safe
   prior_lang = UNKNOWN_LANGUAGE;
@@ -1819,7 +1819,7 @@ Language DetectLanguageSummaryV2(
 
   // Loop through scriptspans accumulating number of text bytes in each language
   while (ss.GetOneScriptSpanLower(&scriptspan)) {
-    ULScript ulscript = scriptspan.ulscript;
+    //ULScript ulscript = scriptspan.ulscript;
 
     // Squeeze out big chunks of text span if asked to
     if (FlagSqueeze(flags)) {

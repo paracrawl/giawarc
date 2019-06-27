@@ -10,7 +10,7 @@ const char* DetectLang(char *data, int length, int* reliable) {
 
     bool is_plain_text = true;
     CLD2::CLDHints cldhints = {NULL, NULL, 0, CLD2::UNKNOWN_LANGUAGE};
-    bool allow_extended_lang = true;
+    //    bool allow_extended_lang = true;
     int flags = 0;
     CLD2::Language language3[3];
     int percent3[3];

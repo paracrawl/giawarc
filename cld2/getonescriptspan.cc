@@ -37,9 +37,9 @@ namespace CLD2 {
 extern const int kNameToEntitySize;
 extern const CharIntPair kNameToEntity[];
 
-static const int kMaxUpToWordBoundary = 50;       // span < this make longer,
+  //static const int kMaxUpToWordBoundary = 50;       // span < this make longer,
                                                   // else make shorter
-static const int kMaxAdvanceToWordBoundary = 10;  // +/- this many bytes
+  //static const int kMaxAdvanceToWordBoundary = 10;  // +/- this many bytes
                                                   // to round to word boundary,
                                                   // direction above
 
@@ -547,7 +547,7 @@ ScriptScanner::ScriptScanner(const char* buffer,
                              bool is_plain_text)
   : start_byte_(buffer),
   next_byte_(buffer),
-  next_byte_limit_(buffer + buffer_length),
+    // next_byte_limit_(buffer + buffer_length),
   byte_length_(buffer_length),
   is_plain_text_(is_plain_text),
   letters_marks_only_(true),
@@ -567,7 +567,7 @@ ScriptScanner::ScriptScanner(const char* buffer,
                              bool any_script)
   : start_byte_(buffer),
   next_byte_(buffer),
-  next_byte_limit_(buffer + buffer_length),
+    //  next_byte_limit_(buffer + buffer_length),
   byte_length_(buffer_length),
   is_plain_text_(is_plain_text),
   letters_marks_only_(!any_text),

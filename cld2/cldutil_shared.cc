@@ -46,12 +46,12 @@ static const uint32 kWordMask0[4] = {
   0xFFFFFFFF, 0x000000FF, 0x0000FFFF, 0x00FFFFFF
 };
 
-static const int kMinCJKUTF8CharBytes = 3;
+  //static const int kMinCJKUTF8CharBytes = 3;
 
-static const int kMinGramCount = 3;
-static const int kMaxGramCount = 16;
+  //static const int kMinGramCount = 3;
+  //static const int kMaxGramCount = 16;
 
-static const int UTFmax = 4;        // Max number of bytes in a UTF-8 character
+  //static const int UTFmax = 4;        // Max number of bytes in a UTF-8 character
 
 
 // Routines to access a hash table of <key:wordhash, value:probs> pairs
