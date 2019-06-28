@@ -9,7 +9,7 @@ import (
 	"log"
 	"io"
 	"os"
-	"github.com/wwaites/giawarc"
+	"github.com/paracrawl/giawarc"
 )
 
 var field string

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/wwaites/giawarc"
+	"github.com/paracrawl/giawarc"
 	"log"
 	"io"
 	"os"

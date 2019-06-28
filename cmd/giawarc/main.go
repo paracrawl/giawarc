@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"time"
-	"github.com/wwaites/giawarc"
+	"github.com/paracrawl/giawarc"
 )
 
 var outdir string

@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"github.com/wolfgangmeyers/go-warc/warc"
-	"github.com/wwaites/giawarc/cld2"
+	"github.com/wwaites/go-warc/warc"
+	"github.com/paracrawl/giawarc/cld2"
 )
 
 // This structure implements the reading side of the WARC preprocessor.
