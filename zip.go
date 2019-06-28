@@ -1,9 +1,12 @@
 package giawarc
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 )
 
@@ -55,3 +58,37 @@ func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 	n, err = zw.Write(buf.Bytes())
 	return
 }
+
+
+func ReadText(z *gzip.Reader) (page *TextRecord, err error) {
+	// TODO make this more efficient, it copyies around data too much
+	var buf bytes.Buffer
+	buf.WriteString("HTTP/1.0 200 OK\n")
+	if _, err = buf.ReadFrom(z); err != nil {
+		return
+	}
+
+	resp, err := http.ReadResponse(bufio.NewReader(&buf), nil)
+	if err != nil {
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var t TextRecord
+	t.URI  = resp.Header.Get("Content-Location")
+	t.ContentType = resp.Header.Get("Content-Type")
+	t.Lang = resp.Header.Get("Content-Language")
+	t.Date = resp.Header.Get("Date")
+	t.RecordId = resp.Header.Get("X-WARC-Record-ID")
+	t.Source = resp.Header.Get("X-WARC-Filename")
+	t.Text = string(body)
+
+
+	page = &t
+	return
+}
+
