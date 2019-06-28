@@ -14,7 +14,7 @@ var outform string
 
 func init() {
 	flag.StringVar(&outdir, "o", ".", "Output location")
-	flag.StringVar(&outform, "f", "bitextor", "Output format")
+	flag.StringVar(&outform, "f", "gzip", "Output format")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -22,10 +22,10 @@ func init() {
 `Formats:
   bitextor
         Output format compatible with bitextor (circa June 2019)
-  rocks
-        Concatenated gzipped pages indexed with RocksDB
-  rockslang
-        Concatenated gzipped pages split by language and indexed with RocksDB
+  gzip
+        Concatenated gzipped pages 
+  gzlang
+        Concatenated gzipped pages split by language
 `)
 	}
 }
