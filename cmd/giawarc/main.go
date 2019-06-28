@@ -88,19 +88,11 @@ func main() {
 
 	elapsed := end.Sub(start)
 
-	fmt.Printf("total records: %v\n", proc.TotalRecords)
-	fmt.Printf("text records: %v\n", proc.TextRecords)
-	fmt.Printf("lang records: %v\n", proc.LangRecords)
-	fmt.Printf("total bytes: %v\n", proc.TotalBytes)
-	fmt.Printf("text bytes: %v\n", proc.TextBytes)
-	fmt.Printf("lang bytes: %v\n", proc.LangBytes)
-	fmt.Printf("elapsed time: %v\n", elapsed)
-	fmt.Printf("content types:\n")
-
-/*
-	cts := proc.ContentTypeStats()
-	for _, s := range cts {
-		fmt.Printf("    %v: %0.08f\n", s.ContentType, s.Prevalence)
-	}
-*/
+	log.Printf("total records: %v\n", proc.TotalRecords)
+	log.Printf("text records: %v\n", proc.TextRecords)
+	log.Printf("lang records: %v\n", proc.LangRecords)
+	log.Printf("total bytes: %v\n", proc.TotalBytes)
+	log.Printf("text bytes: %v\n", proc.TextBytes)
+	log.Printf("lang bytes: %v\n", proc.LangBytes)
+	log.Printf("elapsed time: %v\n", elapsed)
 }

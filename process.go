@@ -77,17 +77,17 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	p.TotalRecords += 1
 	p.TotalBytes   += content_length
 
+	uri, _ := wr.GetHeader().Get("WARC-Target-URI")
+	// skip robots.txt
+	if strings.HasSuffix(uri, "robots.txt") {
+		return
+	}
+
 	// get HTTP response out of the WARC file, and parse it
 	payload := wr.GetPayload()
 	resp, err := http.ReadResponse(bufio.NewReader(payload.GetReader()), nil)
 	if err != nil {
-		log.Printf("Error reading HTTP response: %v", err)
-		return
-	}
-
-	uri, _ := wr.GetHeader().Get("WARC-Target-URI")
-	// skip robots.txt
-	if strings.HasSuffix(uri, "robots.txt") {
+		log.Printf("Error reading HTTP response for %v: %v", uri, err)
 		return
 	}
 
@@ -117,7 +117,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	// transform to UTF-8 and normalise, strip HTML stuff
 	text, err := CleanText(resp.Body, charset)
 	if err != nil {
-		log.Printf("Error reading HTTP response body: %v", err)
+		log.Printf("Error reading HTTP response body for %v: %v", uri, err)
 		return
 	}
 
