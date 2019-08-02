@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"github.com/wwaites/go-warc/warc"
+	"github.com/paracrawl/go-warc/warc"
 	"github.com/paracrawl/giawarc/cld2"
 )
 
