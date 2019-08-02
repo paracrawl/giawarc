@@ -64,8 +64,9 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 	// content type of the WARC record not the payload
 	content_type, _ := wr.GetHeader().Get("Content-Type")
-	if content_type != "application/http; msgtype=response" {
+	if !strings.Contains(content_type,"application/http") || !strings.Contains(content_type,"response") {
 		// nothing to do
+		// log.Printf("Ignoring WARC record (not application/http)")
 		return
 	}
 
