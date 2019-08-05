@@ -6,12 +6,19 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"github.com/ulikunitz/xz"
 )
 
 type Zip struct {
 	zip io.WriteCloser
 	fp  io.WriteCloser
 }
+
+type XZip struct {
+	xzip io.WriteCloser
+	fp io.WriteCloser
+}
+
 
 func NewZippedFile(outdir string, name string) (z Zip, err error) {
 	var zz Zip
@@ -32,13 +39,36 @@ func NewZippedFile(outdir string, name string) (z Zip, err error) {
 	return
 }
 
+func NewXZipFile(outdir string, name string) (x XZip, err error){
+	var xx XZip
+
+	path := filepath.Join(outdir, name)
+	xx.fp, err = os.Create(path)
+	if err != nil {
+		return xx, err
+	}
+
+	w, err := xz.NewWriter(xx.fp)
+	xx.xzip = w
+	return xx,  err
+}
+
 func (z Zip) Write(buf []byte) (int, error) {
 	return z.zip.Write(buf)
+}
+
+func (x XZip) Write(buf []byte) (int, error) {
+	return x.xzip.Write(buf)
 }
 
 func (z Zip) Close() (err error) {
 	z.zip.Close()
 	return z.fp.Close()
+}
+
+func (x XZip) Close() (err error) {
+	x.xzip.Close()
+	return x.fp.Close()
 }
 
 func WriteLine(w io.Writer, s string) (err error) {
@@ -50,29 +80,29 @@ func WriteLine(w io.Writer, s string) (err error) {
 }
 
 type BitextorWriter struct {
-  mime  io.WriteCloser
+	mime  io.WriteCloser
 	lang  io.WriteCloser
 	url   io.WriteCloser
 	plain io.WriteCloser
 }
 
 func NewBitextorWriter(outdir string) (tw TextWriter, err error) {
-	mime, err := NewZippedFile(outdir, "mime.gz")
+	mime, err := NewXZipFile(outdir, "mime.xz")
 	if err != nil {
 		return
 	}
 
-	lang, err := NewZippedFile(outdir, "lang.gz")
+	lang, err := NewXZipFile(outdir, "lang.xz")
 	if err != nil {
 		return
 	}
 
-	url, err := NewZippedFile(outdir, "url.gz")
+	url, err := NewXZipFile(outdir, "url.xz")
 	if err != nil {
 		return
 	}
 
-	plain, err := NewZippedFile(outdir, "plain_text.gz")
+	plain, err := NewXZipFile(outdir, "plain_text.xz")
 	if err != nil {
 		return
 	}
