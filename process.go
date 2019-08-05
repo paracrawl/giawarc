@@ -87,41 +87,50 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	// get HTTP response out of the WARC file, and parse it
 	payload := wr.GetPayload()
 	resp, err := http.ReadResponse(bufio.NewReader(payload.GetReader()), nil)
+	reader := payload.GetReader()
+	charset := "utf-8"
 	if err != nil {
-		log.Printf("Error reading HTTP response for %v: %v", uri, err)
-		return
+		// log.Printf("Error reading HTTP response for %v: %v", uri, err)
+		// return
+		p.TextRecords += 1
+		p.TextBytes += content_length
+	} else  {
+		content_type, charset = CleanContentType(resp.Header.Get("Content-Type"))
+
+		// record some statistics
+		count, ok := p.ContentCounts[content_type]
+		if !ok {
+			p.ContentCounts[content_type] = 1
+		} else {
+			p.ContentCounts[content_type] = count + 1
+		}
+
+		// here is where we would do, is it a PDF? transform to text and then continue,
+		// is it a doc? transform to text and continue
+
+		// If it is not text...
+		if !IsText(content_type) {
+			// nothing to do
+			return
+		}
+
+		// record some statistics
+		p.TextRecords += 1
+		p.TextBytes   += content_length
+
+		reader = resp.Body
+		//text, err := CleanText(resp.Body, charset)
+		//if err != nil {
+		//	log.Printf("Error reading HTTP response body for %v: %v", uri, err)
+		//	return
+		//}
 	}
-
-	content_type, charset := CleanContentType(resp.Header.Get("Content-Type"))
-
-	// record some statistics
-	count, ok := p.ContentCounts[content_type]
-	if !ok {
-		p.ContentCounts[content_type] = 1
-	} else {
-		p.ContentCounts[content_type] = count + 1
-	}
-
-	// here is where we would do, is it a PDF? transform to text and then continue,
-	// is it a doc? transform to text and continue
-
-	// If it is not text...
-	if !IsText(content_type) {
-		// nothing to do
-		return
-	}
-
-	// record some statistics
-	p.TextRecords += 1
-	p.TextBytes   += content_length
-
 	// transform to UTF-8 and normalise, strip HTML stuff
-	text, err := CleanText(resp.Body, charset)
+	text, err := CleanText(reader, charset)
 	if err != nil {
-		log.Printf("Error reading HTTP response body for %v: %v", uri, err)
+		log.Printf("Error reading content for %v: %v", uri,err)
 		return
 	}
-
 	lang, ok := cld2.DetectLang(text)
 	if !ok {
 		return
