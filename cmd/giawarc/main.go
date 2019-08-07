@@ -25,7 +25,9 @@ func init() {
   gzip
         Concatenated gzipped pages 
   gzlang
-        Concatenated gzipped pages split by language
+		Concatenated gzipped pages split by language
+  xzlang 
+		Concatenated xzipped pages split by language
 `)
 	}
 }
@@ -44,12 +46,18 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 			return
 		}
 	} else if outform == "gzip" {
-		tw, err = giawarc.NewZipWriter(outdir)
+		tw, err = giawarc.NewZipWriter(outdir, "gz")
 		if err != nil {
 			return
 		}
 	} else if outform == "gzlang" {
-		m := func(o string) (giawarc.TextWriter, error) { return giawarc.NewZipWriter(o) }
+		m := func(o string) (giawarc.TextWriter, error) { return giawarc.NewZipWriter(o, "gz") }
+		tw, err = giawarc.NewLangWriter(outdir, m)
+		if err != nil {
+			return
+		}
+	} else if outform == "xzlang" {
+		m := func(o string) (giawarc.TextWriter, error) { return giawarc.NewZipWriter(o, "xz") }
 		tw, err = giawarc.NewLangWriter(outdir, m)
 		if err != nil {
 			return

@@ -10,20 +10,24 @@ import (
 	"io"
 	"os"
 	"github.com/paracrawl/giawarc"
+	// "github.com/xi2/xz"
 )
 
 var field string
 var b64 bool
 var nrec int
+var format string 
 
 func init() {
 	flag.StringVar(&field, "f", "uri", "Output field")
+	flag.StringVar(&format, "o", "gz", "File format")
 	flag.BoolVar(&b64, "b", false, "Base64 encode output")
 	flag.IntVar(&nrec, "n", -1, "Number of records")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] GZFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
 		fmt.Fprintf(flag.CommandLine.Output(), "Fields: id, offset, uri, mime, lang, date,  text\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "File format: gz, xz\n")
 	}
 }
 
@@ -45,14 +49,24 @@ func main() {
 	buf := bufio.NewReader(fp)
 	z, err := gzip.NewReader(buf)
 
+	// var z io.Reader
+	// if format == "gz" {
+	// 	z, err = gzip.NewReader(buf)
+	// } else if format == "xz" {
+	// 	z, err = xz.NewReader(buf, 0)
+	// } else {
+	// 	fmt.Printf("Unknown format: %s\n", format)
+	// 	return 
+	// }
+
 	if err != nil {
 		log.Fatal(err)
+		return 
 	}
-	defer z.Close()
+	// defer z.Close()
 
-	for i := 0; i < nrec; i++ {
+	for i := 0; i < nrec || nrec == -1; i++ {
 		z.Multistream(false)
-
 		t, err := giawarc.ReadText(z)
 		if err != nil {
 			log.Fatal(err)

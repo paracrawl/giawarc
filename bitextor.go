@@ -19,7 +19,6 @@ type XZip struct {
 	fp io.WriteCloser
 }
 
-
 func NewZippedFile(outdir string, name string) (z Zip, err error) {
 	var zz Zip
 

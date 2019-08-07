@@ -4,14 +4,17 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"github.com/ulikunitz/xz"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 )
 
 type ZipWriter struct {
-	*os.File
+	fp *os.File
+	compression string
 }
 
 type zipWire struct {
@@ -20,20 +23,32 @@ type zipWire struct {
 	Lang string
 }
 
-func NewZipWriter(out string) (z ZipWriter, err error) {
+func (zw ZipWriter) Close() (err error){
+	return zw.fp.Close()
+}
+
+func (zw ZipWriter) Write(buf []byte) (n int, err error) {
+	return zw.fp.Write(buf)
+}
+
+func NewZipWriter(out string, compression string) (z ZipWriter, err error) {
 	fp, err := os.OpenFile(out, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return
 	}
-	z = ZipWriter{fp}
+	z = ZipWriter{fp: fp, compression: compression}
 	return
 }
 
 func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 	var buf bytes.Buffer
-	z := gzip.NewWriter(&buf)
-
-	z.Name = page.RecordId
+	var z io.WriteCloser
+	if zw.compression == "xz"{
+		z, err = xz.NewWriter(&buf)
+	} else {
+		z = gzip.NewWriter(&buf)
+	}
+	// z.Name = page.RecordId
 
 	fmt.Fprintf(z, "Content-Location: %s\n", page.URI)
 	fmt.Fprintf(z, "Content-Type: %s\n", page.ContentType)
@@ -60,13 +75,15 @@ func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 }
 
 
-func ReadText(z *gzip.Reader) (page *TextRecord, err error) {
+func ReadText(z io.Reader) (page *TextRecord, err error) {
 	// TODO make this more efficient, it copyies around data too much
+
 	var buf bytes.Buffer
 	buf.WriteString("HTTP/1.0 200 OK\n")
 	if _, err = buf.ReadFrom(z); err != nil {
 		return
 	}
+	fmt.Println(buf.String())
 
 	resp, err := http.ReadResponse(bufio.NewReader(&buf), nil)
 	if err != nil {
