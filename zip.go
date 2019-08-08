@@ -83,7 +83,6 @@ func ReadText(z io.Reader) (page *TextRecord, err error) {
 	if _, err = buf.ReadFrom(z); err != nil {
 		return
 	}
-	fmt.Println(buf.String())
 
 	resp, err := http.ReadResponse(bufio.NewReader(&buf), nil)
 	if err != nil {

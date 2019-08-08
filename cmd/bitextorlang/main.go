@@ -12,18 +12,34 @@ import (
 	"path/filepath"
 
 	"github.com/paracrawl/giawarc"
+	"github.com/xi2/xz"
 )
 
 var output string
 var nrec int
+var format string
 
 func init() {
 	flag.StringVar(&output, "o", ".", "Output location")
 	flag.IntVar(&nrec, "n", -1, "Number of records")
+	flag.StringVar(&format, "f", "gz", "Format of input lang files (gz/xz)")
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] GZFolder\nFlags:\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] LangFolder\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
 	}
+}
+
+func ProcessRecord(reader io.Reader, tw giawarc.TextWriter) (err error) {
+	t, err := giawarc.ReadText(reader)
+	if err != nil {
+		return
+	}
+	_, err = tw.WriteText(t)
+	if err != nil {
+		return
+	}
+
+	return nil
 }
 
 func GZlangToBitextorlang(gzpath string, filename string) (err error) {
@@ -35,7 +51,7 @@ func GZlangToBitextorlang(gzpath string, filename string) (err error) {
 	defer fp.Close()
 
 	path := filepath.Join(output, filename)
-	fmt.Println(path)
+	// fmt.Println(path)
 	os.MkdirAll(path, os.ModePerm)
 	tw, err := giawarc.NewBitextorWriter(path)
 	if err != nil {
@@ -45,28 +61,41 @@ func GZlangToBitextorlang(gzpath string, filename string) (err error) {
 	defer tw.Close()
 
 	buf := bufio.NewReader(fp)
-	z, err := gzip.NewReader(buf)
+	var xx *xz.Reader
+	var zz *gzip.Reader
+	if format == "xz" {
+		xx, err = xz.NewReader(buf, 0)
+	} else if format == "gz" {
+		zz, err = gzip.NewReader(buf)
+		defer zz.Close()
+	} else {
+		log.Fatal("Unknown format")
+		return
+	}
 
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	defer z.Close()
 
 	for i := 0; i < nrec || nrec == -1; i++ {
-		z.Multistream(false)
-		t, err := giawarc.ReadText(z)
-		if err != nil {
-			log.Fatal(err)
+		if format == "gz" {
+			zz.Multistream(false)
+			err = ProcessRecord(zz, tw)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+			err = zz.Reset(buf)
+		} else if format == "xz" {
+			xx.Multistream(false)
+			err = ProcessRecord(xx, tw)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+			err = xx.Reset(nil)
 		}
-
-		_, err = tw.WriteText(t)
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
-
-		err = z.Reset(buf)
 		if err == io.EOF {
 			break
 		}
@@ -90,7 +119,7 @@ func main() {
 	}
 	for _, f := range files {
 		path := filepath.Join(gzfolder, f.Name())
-		fmt.Println("Processing ", path)
+		// fmt.Println("Processing ", path)
 		GZlangToBitextorlang(path, f.Name())
 	}
 }
