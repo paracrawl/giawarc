@@ -17,12 +17,14 @@ import (
 
 var output string
 var nrec int
+var compression string
 var format string
 
 func init() {
 	flag.StringVar(&output, "o", ".", "Output location")
 	flag.IntVar(&nrec, "n", -1, "Number of records")
-	flag.StringVar(&format, "f", "gz", "Format of input lang files (gz/xz)")
+	flag.StringVar(&compression, "c", "gz", "Compression of input lang files (gz/xz)")
+	flag.StringVar(&format, "f", "bitextorlang", "Output format (bitextor/bitextorlang)")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] LangFolder\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -42,7 +44,7 @@ func ProcessRecord(reader io.Reader, tw giawarc.TextWriter) (err error) {
 	return nil
 }
 
-func GZlangToBitextorlang(gzpath string, filename string) (err error) {
+func GZlangToBitextorlang(tw giawarc.TextWriter, gzpath string) (err error) {
 	fp, err := os.Open(gzpath)
 	if err != nil {
 		log.Fatal(err)
@@ -50,27 +52,22 @@ func GZlangToBitextorlang(gzpath string, filename string) (err error) {
 	}
 	defer fp.Close()
 
-	path := filepath.Join(output, filename)
-	// fmt.Println(path)
-	os.MkdirAll(path, os.ModePerm)
-	tw, err := giawarc.NewBitextorWriter(path, false)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	defer tw.Close()
 
 	buf := bufio.NewReader(fp)
 	var xx *xz.Reader
 	var zz *gzip.Reader
-	if format == "xz" {
+	if compression == "xz" {
 		xx, err = xz.NewReader(buf, 0)
-	} else if format == "gz" {
+	} else if compression == "gz" {
 		zz, err = gzip.NewReader(buf)
 		defer zz.Close()
 	} else {
-		log.Fatal("Unknown format")
-		return
+		fmt.Println("Unkown compression type: ", compression)
+		os.Exit(1)
 	}
 
 	if err != nil {
@@ -79,7 +76,7 @@ func GZlangToBitextorlang(gzpath string, filename string) (err error) {
 	}
 
 	for i := 0; i < nrec || nrec == -1; i++ {
-		if format == "gz" {
+		if compression == "gz" {
 			zz.Multistream(false)
 			err = ProcessRecord(zz, tw)
 			if err != nil {
@@ -87,7 +84,7 @@ func GZlangToBitextorlang(gzpath string, filename string) (err error) {
 				return
 			}
 			err = zz.Reset(buf)
-		} else if format == "xz" {
+		} else if compression == "xz" {
 			xx.Multistream(false)
 			err = ProcessRecord(xx, tw)
 			if err != nil {
@@ -117,9 +114,35 @@ func main() {
 	if err != nil {
 		return
 	}
+	var tw giawarc.TextWriter
+	// if output format is bitextor, only one writer needed as everything goes into the same directory
+	if format=="bitextor" {
+		os.MkdirAll(output, os.ModePerm)
+		tw, err = giawarc.NewBitextorWriter(output, true) 
+	} else if format=="bitextorlang"{
+	}else{
+		fmt.Println("Unkown output format: ", format)
+		os.Exit(1)
+	}
 	for _, f := range files {
-		path := filepath.Join(gzfolder, f.Name())
-		// fmt.Println("Processing ", path)
-		GZlangToBitextorlang(path, f.Name())
+		inputPath := filepath.Join(gzfolder, f.Name())
+		// if output format is bitextorlang, create a writer for each lang directory 
+		if format=="bitextorlang"{
+			outputPath := filepath.Join(output, f.Name())
+			os.MkdirAll(outputPath, os.ModePerm)
+			tw, err = giawarc.NewBitextorWriter(outputPath, false)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+		}
+		// fmt.Println("Processing ", inputPath)
+		GZlangToBitextorlang(tw, inputPath)
+		if format=="bitextorlang"{
+			tw.Close()
+		}
+	}
+	if format == "bitextor"{
+		tw.Close()
 	}
 }

@@ -17,18 +17,17 @@ import (
 var field string
 var b64 bool
 var nrec int
-var format string
+var compression string
 
 func init() {
 	flag.StringVar(&field, "o", "uri", "Output field")
-	flag.StringVar(&format, "f", "gz", "File format")
+	flag.StringVar(&compression, "c", "gz", "Compression format (gz/xz)")
 	flag.BoolVar(&b64, "b", false, "Base64 encode output")
 	flag.IntVar(&nrec, "n", -1, "Number of records")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] GZFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
 		fmt.Fprintf(flag.CommandLine.Output(), "Fields: id, offset, uri, mime, lang, date,  text\n")
-		fmt.Fprintf(flag.CommandLine.Output(), "File format: gz, xz\n")
 	}
 }
 
@@ -79,14 +78,14 @@ func main() {
 	buf := bufio.NewReader(fp)
 	var xx *xz.Reader
 	var zz *gzip.Reader
-	if format == "xz" {
+	if compression == "xz" {
 		xx, err = xz.NewReader(buf, 0)
-	} else if format == "gz" {
+	} else if compression == "gz" {
 		zz, err = gzip.NewReader(buf)
 		defer zz.Close()
 	} else {
-		log.Fatal("Unknown format")
-		return
+		fmt.Println("Unknown compression type: ", compression)
+		os.Exit(1)
 	}
 
 	if err != nil {
@@ -95,7 +94,7 @@ func main() {
 	}
 
 	for i := 0; i < nrec || nrec == -1; i++ {
-		if format == "gz" {
+		if compression == "gz" {
 			zz.Multistream(false)
 			err = ProcessRecord(zz)
 			if err != nil {
@@ -103,7 +102,7 @@ func main() {
 				return
 			}
 			err = zz.Reset(buf)
-		} else if format == "xz" {
+		} else if compression == "xz" {
 			xx.Multistream(false)
 			err = ProcessRecord(xx)
 			if err != nil {
