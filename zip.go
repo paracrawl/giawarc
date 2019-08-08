@@ -4,26 +4,27 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
-	"github.com/ulikunitz/xz"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/ulikunitz/xz"
 )
 
 type ZipWriter struct {
-	fp *os.File
+	fp          *os.File
 	compression string
 }
 
 type zipWire struct {
-	URI string
+	URI         string
 	ContentType string
-	Lang string
+	Lang        string
 }
 
-func (zw ZipWriter) Close() (err error){
+func (zw ZipWriter) Close() (err error) {
 	return zw.fp.Close()
 }
 
@@ -43,7 +44,7 @@ func NewZipWriter(out string, compression string) (z ZipWriter, err error) {
 func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 	var buf bytes.Buffer
 	var z io.WriteCloser
-	if zw.compression == "xz"{
+	if zw.compression == "xz" {
 		z, err = xz.NewWriter(&buf)
 	} else {
 		z = gzip.NewWriter(&buf)
@@ -74,7 +75,6 @@ func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 	return
 }
 
-
 func ReadText(z io.Reader) (page *TextRecord, err error) {
 	// TODO make this more efficient, it copyies around data too much
 
@@ -96,7 +96,7 @@ func ReadText(z io.Reader) (page *TextRecord, err error) {
 	}
 
 	var t TextRecord
-	t.URI  = resp.Header.Get("Content-Location")
+	t.URI = resp.Header.Get("Content-Location")
 	t.ContentType = resp.Header.Get("Content-Type")
 	t.Lang = resp.Header.Get("Content-Language")
 	t.Date = resp.Header.Get("Date")
@@ -104,8 +104,6 @@ func ReadText(z io.Reader) (page *TextRecord, err error) {
 	t.Source = resp.Header.Get("X-WARC-Filename")
 	t.Text = string(body)
 
-
 	page = &t
 	return
 }
-

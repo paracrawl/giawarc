@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
 	"github.com/ulikunitz/xz"
 )
 
@@ -16,7 +17,7 @@ type Zip struct {
 
 type XZip struct {
 	xzip io.WriteCloser
-	fp io.WriteCloser
+	fp   io.WriteCloser
 }
 
 func NewZippedFile(outdir string, name string) (z Zip, err error) {
@@ -38,7 +39,7 @@ func NewZippedFile(outdir string, name string) (z Zip, err error) {
 	return
 }
 
-func NewXZipFile(outdir string, name string) (x XZip, err error){
+func NewXZipFile(outdir string, name string) (x XZip, err error) {
 	var xx XZip
 
 	path := filepath.Join(outdir, name)
@@ -49,7 +50,7 @@ func NewXZipFile(outdir string, name string) (x XZip, err error){
 
 	w, err := xz.NewWriter(xx.fp)
 	xx.xzip = w
-	return xx,  err
+	return xx, err
 }
 
 func (z Zip) Write(buf []byte) (int, error) {
