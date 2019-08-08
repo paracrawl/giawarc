@@ -41,7 +41,7 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 
 	var tw giawarc.TextWriter
 	if outform == "bitextor" {
-		tw, err = giawarc.NewBitextorWriter(outdir)
+		tw, err = giawarc.NewBitextorWriter(outdir, true)
 		if err != nil {
 			return
 		}

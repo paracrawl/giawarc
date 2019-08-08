@@ -53,7 +53,7 @@ func GZlangToBitextorlang(gzpath string, filename string) (err error) {
 	path := filepath.Join(output, filename)
 	// fmt.Println(path)
 	os.MkdirAll(path, os.ModePerm)
-	tw, err := giawarc.NewBitextorWriter(path)
+	tw, err := giawarc.NewBitextorWriter(path, false)
 	if err != nil {
 		log.Fatal(err)
 		return
