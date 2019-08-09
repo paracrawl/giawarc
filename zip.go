@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
+
+	"unicode/utf8"
 
 	"github.com/ulikunitz/xz"
 )
@@ -95,14 +98,29 @@ func ReadText(z io.Reader) (page *TextRecord, err error) {
 	}
 
 	var t TextRecord
-	t.URI = resp.Header.Get("Content-Location")
-	t.ContentType = resp.Header.Get("Content-Type")
-	t.Lang = resp.Header.Get("Content-Language")
-	t.Date = resp.Header.Get("Date")
-	t.RecordId = resp.Header.Get("X-WARC-Record-ID")
-	t.Source = resp.Header.Get("X-WARC-Filename")
-	t.Text = string(body)
+	// t.URI = resp.Header.Get("Content-Location")
+	// t.ContentType = resp.Header.Get("Content-Type")
+	// t.Lang = resp.Header.Get("Content-Language")
+	// t.Date = resp.Header.Get("Date")
+	// t.RecordId = resp.Header.Get("X-WARC-Record-ID")
+	// t.Source = resp.Header.Get("X-WARC-Filename")
+	// t.Text = string(body)
+
+	t.URI = strings.Map(fixUtf, resp.Header.Get("Content-Location"))
+	t.ContentType = strings.Map(fixUtf, resp.Header.Get("Content-Type"))
+	t.Lang = strings.Map(fixUtf, resp.Header.Get("Content-Language"))
+	t.Date = strings.Map(fixUtf, resp.Header.Get("Date"))
+	t.RecordId = strings.Map(fixUtf, resp.Header.Get("X-WARC-Record-ID"))
+	t.Source = strings.Map(fixUtf, resp.Header.Get("X-WARC-Filename"))
+	t.Text = strings.Map(fixUtf, string(body))
 
 	page = &t
 	return
+}
+
+func fixUtf(r rune) rune {
+	if r == utf8.RuneError {
+		return -1
+	}
+	return r
 }
