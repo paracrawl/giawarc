@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"github.com/paracrawl/go-warc/warc"
+
 	"github.com/paracrawl/giawarc/cld2"
+	"github.com/paracrawl/go-warc/warc"
 )
 
 // This structure implements the reading side of the WARC preprocessor.
@@ -16,14 +17,14 @@ type WARCPreProcessor struct {
 	wf *warc.WARCFile
 	tw TextWriter
 
-	Filename string
-	TextRecords int  // records claiming to be text
-	LangRecords int  // records where we can tell the language
-	TotalRecords int // total records
+	Filename      string
+	TextRecords   int            // records claiming to be text
+	LangRecords   int            // records where we can tell the language
+	TotalRecords  int            // total records
 	ContentCounts map[string]int // statistics about content types
-	TextBytes  int // bytes claiming to be text
-	LangBytes  int // bytes claiming to be text where we know the language
-	TotalBytes int // total bytes
+	TextBytes     int            // bytes claiming to be text
+	LangBytes     int            // bytes claiming to be text where we know the language
+	TotalBytes    int            // total bytes
 }
 
 // Create a preprocessor given a readable buffer containing a (gzipped) WARC file.
@@ -64,7 +65,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 	// content type of the WARC record not the payload
 	content_type, _ := wr.GetHeader().Get("Content-Type")
-	if !strings.Contains(content_type,"application/http") || !strings.Contains(content_type,"response") {
+	if !strings.Contains(content_type, "application/http") || !strings.Contains(content_type, "response") {
 		// nothing to do
 		// log.Printf("Ignoring WARC record (not application/http)")
 		return
@@ -76,7 +77,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 	// record some statistics
 	p.TotalRecords += 1
-	p.TotalBytes   += content_length
+	p.TotalBytes += content_length
 
 	uri, _ := wr.GetHeader().Get("WARC-Target-URI")
 	// skip robots.txt
@@ -88,14 +89,9 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	payload := wr.GetPayload()
 	resp, err := http.ReadResponse(bufio.NewReader(payload.GetReader()), nil)
 	reader := payload.GetReader()
-	charset := "utf-8"
-	if err != nil {
-		// log.Printf("Error reading HTTP response for %v: %v", uri, err)
-		// return
-		p.TextRecords += 1
-		p.TextBytes += content_length
-	} else  {
-		content_type, charset = CleanContentType(resp.Header.Get("Content-Type"))
+	// var charset string
+	if err == nil {
+		content_type, _ = CleanContentType(resp.Header.Get("Content-Type"))
 
 		// record some statistics
 		count, ok := p.ContentCounts[content_type]
@@ -114,10 +110,6 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 			return
 		}
 
-		// record some statistics
-		p.TextRecords += 1
-		p.TextBytes   += content_length
-
 		reader = resp.Body
 		//text, err := CleanText(resp.Body, charset)
 		//if err != nil {
@@ -125,10 +117,11 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		//	return
 		//}
 	}
+
 	// transform to UTF-8 and normalise, strip HTML stuff
-	text, err := CleanText(reader, charset)
+	text, err := CleanText(reader, content_type)
 	if err != nil {
-		log.Printf("Error reading content for %v: %v", uri,err)
+		log.Printf("Error reading content for %v: %v", uri, err)
 		return
 	}
 	lang, ok := cld2.DetectLang(text)
@@ -136,11 +129,11 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		return
 	}
 
-	tidied    := CleanSpaces(text)         // clean up excess whitespace
+	tidied := CleanSpaces(text) // clean up excess whitespace
 
 	// record some statistics
 	p.LangRecords += 1
-	p.LangBytes   += content_length
+	p.LangBytes += content_length
 
 	recid := wr.GetHeader().GetRecordId()
 	recid = strings.TrimPrefix(recid, "<urn:uuid:")
@@ -148,13 +141,13 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 	// send off a TextRecord to whatever will write it
 	rec := TextRecord{
-		Source: p.Filename,
-		Date: date,
-		RecordId: recid,
-		URI: uri,
+		Source:      p.Filename,
+		Date:        date,
+		RecordId:    recid,
+		URI:         uri,
 		ContentType: content_type,
-		Lang: lang,
-		Text: tidied,
+		Lang:        lang,
+		Text:        tidied,
 	}
 
 	_, err = p.tw.WriteText(&rec)
@@ -164,7 +157,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 func (p *WARCPreProcessor) ContentTypeStats() ContentStats {
 	cts := make(ContentStats, len(p.ContentCounts))
 	for k, v := range p.ContentCounts {
-		s := ContentStat{ ContentType: k, Prevalence: float64(v)/float64(p.TotalRecords) }
+		s := ContentStat{ContentType: k, Prevalence: float64(v) / float64(p.TotalRecords)}
 		cts = append(cts, s)
 	}
 	sort.Sort(cts)
@@ -174,7 +167,7 @@ func (p *WARCPreProcessor) ContentTypeStats() ContentStats {
 // A statistic about a content type
 type ContentStat struct {
 	ContentType string
-	Prevalence float64
+	Prevalence  float64
 }
 
 // An array of content-type statistics, with a new name so that we

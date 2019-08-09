@@ -2,9 +2,12 @@ package giawarc
 
 import (
 	"bytes"
-//	"github.com/microcosm-cc/bluemonday"
-	"golang.org/x/text/encoding/ianaindex"
+
+	"golang.org/x/net/html/charset"
 	"golang.org/x/text/unicode/norm"
+
+	//	"github.com/microcosm-cc/bluemonday"
+
 	"html"
 	"io"
 	"regexp"
@@ -12,16 +15,17 @@ import (
 )
 
 var broken_content_types = map[string]string{
-	"txt": "text/plain",
-	"text": "text/plain",
+	"txt":       "text/plain",
+	"text":      "text/plain",
 	"text/plan": "text/plain",
 }
+
 //var policy *bluemonday.Policy
 
 var ms_re, ds_re *regexp.Regexp
 
 func init() {
-//	policy = bluemonday.StrictPolicy()
+	//	policy = bluemonday.StrictPolicy()
 
 	ms_re = regexp.MustCompile(`[ \t\r\p{Zs}\x{c2a0}]+`)
 	ds_re = regexp.MustCompile(`[\p{Zs}]*[\x0a\x0b\x0c\x0d\p{Zl}\p{Zp}]+[\p{Zs}]*`)
@@ -47,26 +51,13 @@ func CleanContentType(content_type string) (string, string) {
 	return content_type, charset
 }
 
-
 // Find the right reader to recode into UTF-8
-func Recode(body io.Reader, charset string) io.Reader {
-	if charset != "" {
+func Recode(body io.Reader, contentType string) io.Reader {
+	r, err := charset.NewReader(body, contentType)
+	if err != nil {
 		return body
 	}
-
-	enc, err := ianaindex.MIME.Encoding(charset)
-	if err == nil {
-		dec := enc.NewDecoder()
-		return dec.Reader(body)
-	}
-
-	enc, err = ianaindex.IANA.Encoding(charset)
-	if err == nil {
-		dec := enc.NewDecoder()
-		return dec.Reader(body)
-	}
-
-	return body
+	return r
 }
 
 func CleanSpaces(s string) string {
@@ -74,7 +65,7 @@ func CleanSpaces(s string) string {
 	s = ms_re.ReplaceAllLiteralString(s, " ")
 	var buf strings.Builder
 
-	for _, s := range(strings.Split(s, "\n")) {
+	for _, s := range strings.Split(s, "\n") {
 		s := strings.TrimSpace(s)
 		if len(s) == 0 {
 			continue
@@ -108,20 +99,20 @@ func FixInvalidUtf8(reader io.Reader) (string, error) {
 
 // Clean and sanitize the text, making sure the result is normalised
 // UTF-8 free of any HTML markup
-func CleanText(reader io.Reader, charset string) (string, error) {
+func CleanText(reader io.Reader, contentType string) (string, error) {
 
 	//	sanitized  := policy.SanitizeReader(reader) // strip out any HTML crap
-	sanitized, err  := HtmlToText(reader)
+	sanitized, err := HtmlToText(reader)
 	if err != nil {
 		return "", err
 	}
-	encoded    := Recode(sanitized, charset)    // transform to UTF-8
-	valid, err := FixInvalidUtf8(encoded)     	// make sure all UTF-8 is valid
+	encoded := Recode(sanitized, contentType) // transform to UTF-8
+	valid, err := FixInvalidUtf8(encoded)     // make sure all UTF-8 is valid
 	if err != nil {
 		return "", err
 	}
-	normed     := norm.NFKC.String(valid)       // normalise UTF-8
-	unescaped  := html.UnescapeString(normed)   // take care of html &xx;
+	normed := norm.NFKC.String(valid)        // normalise UTF-8
+	unescaped := html.UnescapeString(normed) // take care of html &xx;
 
 	return unescaped, nil
 }
