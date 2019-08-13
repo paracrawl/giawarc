@@ -31,6 +31,12 @@ func init() {
 	}
 }
 
+type MultiStreamReader interface {
+	io.Reader
+	Multistream(bool)
+	Reset(io.Reader) error
+}
+
 func ProcessRecord(reader io.Reader) (err error) {
 	t, err := giawarc.ReadText(reader)
 	if err != nil {
@@ -76,13 +82,13 @@ func main() {
 	defer fp.Close()
 
 	buf := bufio.NewReader(fp)
-	var xx *xz.Reader
-	var zz *gzip.Reader
+
+	var z MultiStreamReader
+
 	if compression == "xz" {
-		xx, err = xz.NewReader(buf, 0)
+		z, err = xz.NewReader(buf, 0)
 	} else if compression == "gz" {
-		zz, err = gzip.NewReader(buf)
-		defer zz.Close()
+		z, err = gzip.NewReader(buf)
 	} else {
 		fmt.Println("Unknown compression type: ", compression)
 		os.Exit(1)
@@ -93,23 +99,20 @@ func main() {
 		return
 	}
 
+	// XXX the xz reader does not implement Close. Since we're
+	// operating in reading mode, and the file itself gets
+	// closed, this probably doesn't matter too much.
+	// defer z.Close()
+
 	for i := 0; i < nrec || nrec == -1; i++ {
 		if compression == "gz" {
-			zz.Multistream(false)
-			err = ProcessRecord(zz)
+			z.Multistream(false)
+			err = ProcessRecord(z)
 			if err != nil {
 				log.Fatal(err)
 				return
 			}
-			err = zz.Reset(buf)
-		} else if compression == "xz" {
-			xx.Multistream(false)
-			err = ProcessRecord(xx)
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
-			err = xx.Reset(nil)
+			err = z.Reset(buf)
 		}
 		if err == io.EOF {
 			break
