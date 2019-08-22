@@ -14,7 +14,8 @@ func init() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
 		fmt.Fprintf(flag.CommandLine.Output(),
-`Output some metadata about each entry in the WARC file`)
+`Output some metadata about each entry in the WARC file
+`)
 	}
 }
 
