@@ -7,15 +7,21 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"hash"
+	"strconv"
 
 	"github.com/paracrawl/giawarc/cld2"
 	"github.com/paracrawl/go-warc/warc"
+	"github.com/spaolacci/murmur3"
 )
 
 // This structure implements the reading side of the WARC preprocessor.
 type WARCPreProcessor struct {
 	wf *warc.WARCFile
 	tw TextWriter
+	inputhashes []uint32
+	outputhashes []uint32
+	hasher hash.Hash32
 
 	Filename      string
 	TextRecords   int            // records claiming to be text
@@ -30,7 +36,7 @@ type WARCPreProcessor struct {
 // Create a preprocessor given a readable buffer containing a (gzipped) WARC file.
 // The second argument, the TextRecord channel is where texts that are found will
 // be sent. It will be closed when the file is done.
-func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter) (wp *WARCPreProcessor, err error) {
+func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter ) (wp *WARCPreProcessor, err error) {
 	var p WARCPreProcessor
 	p.ContentCounts = make(map[string]int)
 	p.wf, err = warc.NewWARCFile(rc)
@@ -38,14 +44,37 @@ func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter) (wp *WARCPreProcessor,
 		return
 	}
 	p.tw = tw
+	p.hasher = murmur3.New32()
 	wp = &p
 	return
 }
 
+func readHashes(z io.Reader) ([]uint32) {
+	var hashes []uint32
+	reader := bufio.NewReader(z)
+	var line string
+	var err error
+	for {
+		line, err = reader.ReadString('\n')
+
+		if err != nil {
+			break
+		}
+		hash, err :=  strconv.ParseInt(strings.TrimSpace(line), 10, 64)
+		if err != nil {
+			continue
+		}
+		hashes = append(hashes, uint32(hash))
+	}
+	return hashes
+}
+
 // Loop through each record and process it
-func (p *WARCPreProcessor) Process() {
+func (p *WARCPreProcessor) Process(inputHashReader io.Reader, outputHashWriter ZipWriter) {
+	p.inputhashes = readHashes(inputHashReader)
 	reader := p.wf.GetReader()
 	reader.Iterate(p.processRecord)
+	outputHashWriter.WriteHashes(p.outputhashes)
 }
 
 // Callback from the WARC reader Iterate function
@@ -130,6 +159,19 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	}
 
 	tidied := CleanSpaces(text) // clean up excess whitespace
+
+	// hash clean text
+	p.hasher.Write([]byte (tidied))
+	newhash := p.hasher.Sum32()
+
+	for _, hash := range p.inputhashes {
+		// if hash is in input return
+		if hash == newhash {
+			return
+		}
+	}
+	// store new hash and continue
+	p.outputhashes = append(p.outputhashes, newhash)
 
 	// record some statistics
 	p.LangRecords += 1

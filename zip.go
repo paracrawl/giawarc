@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/ulikunitz/xz"
+	xzreader "github.com/xi2/xz"
 )
 
 type ZipWriter struct {
@@ -41,6 +42,27 @@ func NewZipWriter(out string, compression string) (z ZipWriter, err error) {
 		return
 	}
 	z = ZipWriter{fp: fp, compression: compression}
+	return
+}
+
+func (zw ZipWriter) WriteHashes(hashes []uint32) (n int, err error) {
+	var buf bytes.Buffer
+	var z io.WriteCloser
+	if zw.compression == "xz" {
+		z, err = xz.NewWriter(&buf)
+	} else {
+		z = gzip.NewWriter(&buf)
+	}
+	for _, hash := range hashes{
+		fmt.Fprintf(z, "%d\n", hash)
+	}
+
+	err = z.Close()
+	if err != nil {
+		return
+	}
+
+	n, err = zw.Write(buf.Bytes())
 	return
 }
 
@@ -77,6 +99,7 @@ func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 	n, err = zw.Write(buf.Bytes())
 	return
 }
+
 
 func ReadText(z io.Reader) (page *TextRecord, err error) {
 	// TODO make this more efficient, it copyies around data too much
@@ -123,4 +146,65 @@ func fixUtf(r rune) rune {
 		return -1
 	}
 	return r
+}
+
+type multiStreamReader interface {
+	io.Reader
+	Multistream(bool)
+	Reset(io.Reader) error
+
+}
+
+type GzOrXzReader struct {
+	reader	multiStreamReader
+	buf	io.Reader
+	fp	*os.File
+	compression	string
+}
+
+func NewGzOrXzReader(compressionType string, filename string) (z GzOrXzReader, err error){
+	fp, err := os.Open(filename)
+	// defer fp.Close()
+	if err != nil {
+		return
+	}
+	buf := bufio.NewReader(fp)
+
+	var msr multiStreamReader
+
+	if compressionType == "xz" {
+		msr, err= xzreader.NewReader(buf, 0)
+	} else if compressionType == "gz" {
+		msr, err = gzip.NewReader(buf)
+	}
+
+	if err != nil{
+		return
+	}
+
+	z = GzOrXzReader{reader: msr, buf: buf, fp: fp, compression: compressionType}
+
+	return
+}
+
+func (z GzOrXzReader) Close() {
+	z.fp.Close()
+}
+
+func (z GzOrXzReader) Multistream (ms bool) {
+	z.reader.Multistream(ms)
+}
+
+func (z GzOrXzReader) Reset () (error){
+	var err error
+	if z.compression == "xz" {
+		err = z.reader.Reset(nil)
+	} else if z.compression == "gz" {
+		err = z.reader.Reset(z.buf)
+	}
+	return err
+}
+
+func (z GzOrXzReader) GetReader () (io.Reader){
+	return z.reader
 }

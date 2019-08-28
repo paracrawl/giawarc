@@ -11,10 +11,14 @@ import (
 
 var outdir string
 var outform string
+var outputHash string
+var inputHash string
 
 func init() {
 	flag.StringVar(&outdir, "o", ".", "Output location")
 	flag.StringVar(&outform, "f", "gzip", "Output format")
+	flag.StringVar(&outputHash, "output_hash", "", "Location of the file where hashes of the obtained plain text will be written")
+	flag.StringVar(&inputHash, "input_hash", "", "Location of the file where hashes of plain text are stored")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -68,12 +72,27 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 	}
 	defer tw.Close()
 
+	var inputReader giawarc.GzOrXzReader
+	inputReader, err = giawarc.NewGzOrXzReader("xz", inputHash)
+	defer inputReader.Close()
+	if err != nil{
+		fmt.Println("Error while reader input hashes")
+		os.Exit(1)
+	}
+
+	var outputWriter giawarc.ZipWriter
+	outputWriter, err = giawarc.NewZipWriter(outputHash, "xz")
+	if err != nil{
+		fmt.Println("Error while opening output hashes file")
+		os.Exit(1)
+	}
+
 	proc, err = giawarc.NewWARCPreProcessor(f, tw)
 	if err != nil {
 		return
 	}
 
-	proc.Process()
+	proc.Process(inputReader.GetReader(), outputWriter)
 
 	return
 }

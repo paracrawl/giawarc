@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"compress/gzip"
 	"flag"
 	"fmt"
 	"io"
@@ -12,7 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/paracrawl/giawarc"
-	"github.com/xi2/xz"
 )
 
 var output string
@@ -51,30 +48,15 @@ func ProcessRecord(reader io.Reader, tw giawarc.TextWriter) (err error) {
 }
 
 func GZlangToBitextorlang(tw giawarc.TextWriter, gzpath string) (err error) {
-	fp, err := os.Open(gzpath)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	defer fp.Close()
+	var z giawarc.GzOrXzReader
 
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	buf := bufio.NewReader(fp)
-
-	var z MultiStreamReader
-
-	if compression == "xz" {
-		z, err = xz.NewReader(buf, 0)
-	} else if compression == "gz" {
-		z, err = gzip.NewReader(buf)
+	if compression == "xz" || compression == "gz"{
+		z, err = giawarc.NewGzOrXzReader(compression, gzpath)
 	} else {
 		fmt.Println("Unknown compression type: ", compression)
 		os.Exit(1)
 	}
+	defer z.Close()
 
 	if err != nil {
 		return
@@ -82,16 +64,12 @@ func GZlangToBitextorlang(tw giawarc.TextWriter, gzpath string) (err error) {
 
 	for i := 0; i < nrec || nrec == -1; i++ {
 		z.Multistream(false)
-		err = ProcessRecord(z, tw)
+		err = ProcessRecord(z.GetReader(), tw)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		if compression == "gz"{
-			err = z.Reset(buf)
-		} else {
-			err = z.Reset(nil)
-		}
+		err = z.Reset()
 		if err == io.EOF {
 			break
 		}
@@ -145,3 +123,4 @@ func main() {
 		tw.Close()
 	}
 }
+
