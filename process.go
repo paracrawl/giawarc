@@ -132,6 +132,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 			return
 		}
 
+
 		reader = resp.Body
 		//text, err := CleanText(resp.Body, charset)
 		//if err != nil {
@@ -140,6 +141,8 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		//}
 	}
 
+	p.TextRecords += 1
+	p.TextBytes += content_length
 	// transform to UTF-8 and normalise, strip HTML stuff
 	text, err := CleanText(reader, content_type)
 	if err != nil {
