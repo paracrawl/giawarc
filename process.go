@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strings"
 	"hash"
-	"strconv"
 
 	"github.com/paracrawl/giawarc/cld2"
 	"github.com/paracrawl/go-warc/warc"
@@ -49,32 +48,16 @@ func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter ) (wp *WARCPreProcessor
 	return
 }
 
-func readHashes(z io.Reader) ([]uint32) {
-	var hashes []uint32
-	reader := bufio.NewReader(z)
-	var line string
-	var err error
-	for {
-		line, err = reader.ReadString('\n')
-
-		if err != nil {
-			break
-		}
-		hash, err :=  strconv.ParseInt(strings.TrimSpace(line), 10, 64)
-		if err != nil {
-			continue
-		}
-		hashes = append(hashes, uint32(hash))
-	}
-	return hashes
-}
-
 // Loop through each record and process it
-func (p *WARCPreProcessor) Process(inputHashReader io.Reader, outputHashWriter ZipWriter) {
-	p.inputhashes = readHashes(inputHashReader)
+func (p *WARCPreProcessor) Process(inputHashReader GzOrXzReader, outputHashWriter ZipWriter) {
+	if inputHashReader != (GzOrXzReader{}) {
+		p.inputhashes = inputHashReader.ReadHashes()
+	}
 	reader := p.wf.GetReader()
 	reader.Iterate(p.processRecord)
-	outputHashWriter.WriteHashes(p.outputhashes)
+	if outputHashWriter != (ZipWriter{}) {
+		outputHashWriter.WriteHashes(p.outputhashes)
+	}
 }
 
 // Callback from the WARC reader Iterate function

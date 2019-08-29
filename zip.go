@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
+	"strconv"
 	"unicode/utf8"
 
 	"github.com/ulikunitz/xz"
@@ -100,53 +100,7 @@ func (zw ZipWriter) WriteText(page *TextRecord) (n int, err error) {
 	return
 }
 
-
-func ReadText(z io.Reader) (page *TextRecord, err error) {
-	// TODO make this more efficient, it copyies around data too much
-
-	var buf bytes.Buffer
-	buf.WriteString("HTTP/1.0 200 OK\n")
-	if _, err = buf.ReadFrom(z); err != nil {
-		return
-	}
-
-	resp, err := http.ReadResponse(bufio.NewReader(&buf), nil)
-	if err != nil {
-		return
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	var t TextRecord
-	// t.URI = resp.Header.Get("Content-Location")
-	// t.ContentType = resp.Header.Get("Content-Type")
-	// t.Lang = resp.Header.Get("Content-Language")
-	// t.Date = resp.Header.Get("Date")
-	// t.RecordId = resp.Header.Get("X-WARC-Record-ID")
-	// t.Source = resp.Header.Get("X-WARC-Filename")
-	// t.Text = string(body)
-
-	t.URI = strings.Map(fixUtf, resp.Header.Get("Content-Location"))
-	t.ContentType = strings.Map(fixUtf, resp.Header.Get("Content-Type"))
-	t.Lang = strings.Map(fixUtf, resp.Header.Get("Content-Language"))
-	t.Date = strings.Map(fixUtf, resp.Header.Get("Date"))
-	t.RecordId = strings.Map(fixUtf, resp.Header.Get("X-WARC-Record-ID"))
-	t.Source = strings.Map(fixUtf, resp.Header.Get("X-WARC-Filename"))
-	t.Text = strings.Map(fixUtf, string(body))
-
-	page = &t
-	return
-}
-
-func fixUtf(r rune) rune {
-	if r == utf8.RuneError {
-		return -1
-	}
-	return r
-}
+// GZ OR XZ READER
 
 type multiStreamReader interface {
 	io.Reader
@@ -164,7 +118,6 @@ type GzOrXzReader struct {
 
 func NewGzOrXzReader(compressionType string, filename string) (z GzOrXzReader, err error){
 	fp, err := os.Open(filename)
-	// defer fp.Close()
 	if err != nil {
 		return
 	}
@@ -207,4 +160,70 @@ func (z GzOrXzReader) Reset () (error){
 
 func (z GzOrXzReader) GetReader () (io.Reader){
 	return z.reader
+}
+
+func (z GzOrXzReader) ReadHashes() ([]uint32) {
+	var hashes []uint32
+	reader := bufio.NewReader(z.reader)
+	var line string
+	var err error
+	for {
+		line, err = reader.ReadString('\n')
+		if err != nil{
+			break
+		}
+		hash, err := strconv.ParseInt(strings.TrimSpace(line), 10, 64)
+		if err != nil{
+			continue
+		}
+		hashes = append(hashes, uint32(hash))
+	}
+	return hashes
+}
+
+func (z GzOrXzReader) ReadText() (page *TextRecord, err error) {
+	// TODO make this more efficient, it copyies around data too much
+
+	var buf bytes.Buffer
+	buf.WriteString("HTTP/1.0 200 OK\n")
+	if _, err = buf.ReadFrom(z.reader); err != nil {
+		return
+	}
+
+	resp, err := http.ReadResponse(bufio.NewReader(&buf), nil)
+	if err != nil {
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var t TextRecord
+	// t.URI = resp.Header.Get("Content-Location")
+	// t.ContentType = resp.Header.Get("Content-Type")
+	// t.Lang = resp.Header.Get("Content-Language")
+	// t.Date = resp.Header.Get("Date")
+	// t.RecordId = resp.Header.Get("X-WARC-Record-ID")
+	// t.Source = resp.Header.Get("X-WARC-Filename")
+	// t.Text = string(body)
+
+	t.URI = strings.Map(fixUtf, resp.Header.Get("Content-Location"))
+	t.ContentType = strings.Map(fixUtf, resp.Header.Get("Content-Type"))
+	t.Lang = strings.Map(fixUtf, resp.Header.Get("Content-Language"))
+	t.Date = strings.Map(fixUtf, resp.Header.Get("Date"))
+	t.RecordId = strings.Map(fixUtf, resp.Header.Get("X-WARC-Record-ID"))
+	t.Source = strings.Map(fixUtf, resp.Header.Get("X-WARC-Filename"))
+	t.Text = strings.Map(fixUtf, string(body))
+
+	page = &t
+	return
+}
+
+func fixUtf(r rune) rune {
+	if r == utf8.RuneError {
+		return -1
+	}
+	return r
 }

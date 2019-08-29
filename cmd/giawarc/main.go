@@ -73,18 +73,24 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 	defer tw.Close()
 
 	var inputReader giawarc.GzOrXzReader
-	inputReader, err = giawarc.NewGzOrXzReader("xz", inputHash)
-	defer inputReader.Close()
-	if err != nil{
-		fmt.Println("Error while reader input hashes")
-		os.Exit(1)
+	if inputHash != "" {
+		inputReader, err = giawarc.NewGzOrXzReader("xz", inputHash)
+		defer inputReader.Close()
+		if err != nil{
+			fmt.Println("Error while reader input hashes")
+			os.Exit(1)
+		}
 	}
 
 	var outputWriter giawarc.ZipWriter
-	outputWriter, err = giawarc.NewZipWriter(outputHash, "xz")
-	if err != nil{
-		fmt.Println("Error while opening output hashes file")
-		os.Exit(1)
+	if outputHash != "" {
+		outputWriter, err = giawarc.NewZipWriter(outputHash, "xz")
+		defer outputWriter.Close()
+
+		if err != nil{
+			fmt.Println("Error while opening output hashes file")
+			os.Exit(1)
+		}
 	}
 
 	proc, err = giawarc.NewWARCPreProcessor(f, tw)
@@ -92,7 +98,7 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 		return
 	}
 
-	proc.Process(inputReader.GetReader(), outputWriter)
+	proc.Process(inputReader, outputWriter)
 
 	return
 }

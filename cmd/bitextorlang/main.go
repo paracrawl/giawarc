@@ -34,8 +34,8 @@ func init() {
 	}
 }
 
-func ProcessRecord(reader io.Reader, tw giawarc.TextWriter) (err error) {
-	t, err := giawarc.ReadText(reader)
+func ProcessRecord(reader giawarc.GzOrXzReader, tw giawarc.TextWriter) (err error) {
+	t, err := reader.ReadText()
 	if err != nil {
 		return
 	}
@@ -64,7 +64,7 @@ func GZlangToBitextorlang(tw giawarc.TextWriter, gzpath string) (err error) {
 
 	for i := 0; i < nrec || nrec == -1; i++ {
 		z.Multistream(false)
-		err = ProcessRecord(z.GetReader(), tw)
+		err = ProcessRecord(z, tw)
 		if err != nil {
 			log.Fatal(err)
 			return
