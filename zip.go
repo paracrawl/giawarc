@@ -45,7 +45,7 @@ func NewZipWriter(out string, compression string) (z ZipWriter, err error) {
 	return
 }
 
-func (zw ZipWriter) WriteHashes(hashes []uint32) (n int, err error) {
+func (zw ZipWriter) WriteHashes(hashes map[uint32]struct{}) (n int, err error) {
 	var buf bytes.Buffer
 	var z io.WriteCloser
 	if zw.compression == "xz" {
@@ -53,7 +53,7 @@ func (zw ZipWriter) WriteHashes(hashes []uint32) (n int, err error) {
 	} else {
 		z = gzip.NewWriter(&buf)
 	}
-	for _, hash := range hashes{
+	for hash, _ := range hashes{
 		fmt.Fprintf(z, "%d\n", hash)
 	}
 
@@ -162,8 +162,10 @@ func (z GzOrXzReader) GetReader () (io.Reader){
 	return z.reader
 }
 
-func (z GzOrXzReader) ReadHashes() ([]uint32) {
-	var hashes []uint32
+var Empty struct{}
+
+func (z GzOrXzReader) ReadHashes() (map[uint32]struct{}) {
+	hashes := make (map[uint32]struct{})
 	reader := bufio.NewReader(z.reader)
 	var line string
 	var err error
@@ -176,7 +178,8 @@ func (z GzOrXzReader) ReadHashes() ([]uint32) {
 		if err != nil{
 			continue
 		}
-		hashes = append(hashes, uint32(hash))
+		// hashes = append(hashes, uint32(hash))
+		hashes[uint32(hash)]=Empty
 	}
 	return hashes
 }

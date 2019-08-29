@@ -18,8 +18,8 @@ import (
 type WARCPreProcessor struct {
 	wf *warc.WARCFile
 	tw TextWriter
-	inputHashes []uint32
-	outputHashes []uint32
+	inputHashes map[uint32]struct{}
+	outputHashes map[uint32]struct{}
 	inputHashReader GzOrXzReader
 	outputHashWriter ZipWriter
 	inputHashing bool
@@ -52,6 +52,8 @@ func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter, inputHashReader GzOrXz
 	p.hasher = murmur3.New32()
 	p.outputHashing = (outputHashWriter != (ZipWriter{}))
 	p.inputHashing = (inputHashReader != (GzOrXzReader{}))
+	p.inputHashes = make(map[uint32]struct{})
+	p.outputHashes = make (map[uint32]struct{})
 	wp = &p
 	return
 }
@@ -156,17 +158,12 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		// hash clean text
 		p.hasher.Write([]byte (tidied))
 		newhash := p.hasher.Sum32()
-		for _, hash := range p.inputHashes {
-			// if hash is in input return
-			if hash == newhash {
-				return
-			}
-		}
+		_, exists := p.inputHashes[newhash]
+		if exists {return}
+		_, exists = p.outputHashes[newhash]
+		if exists {return}
 		// store new hash and continue
-		if p.outputHashing {
-			p.outputHashes = append(p.outputHashes, newhash)
-		}
-
+		p.outputHashes[newhash] = Empty
 	}
 
 	// record some statistics
