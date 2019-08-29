@@ -1,5 +1,5 @@
 
-## Installation
+## Installation
 
 First make sure Go is installed. If version 1.12 is not available for your
 operating system, the latest version can be gotten from:
