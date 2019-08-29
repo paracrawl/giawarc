@@ -17,8 +17,8 @@ var inputHash string
 func init() {
 	flag.StringVar(&outdir, "o", ".", "Output location")
 	flag.StringVar(&outform, "f", "gzip", "Output format")
-	flag.StringVar(&outputHash, "output_hash", "", "Location of the file where hashes of the obtained plain text will be written")
-	flag.StringVar(&inputHash, "input_hash", "", "Location of the file where hashes of plain text are stored")
+	flag.StringVar(&outputHash, "output_hash", "", "Output path Murmur Hash of plain text")
+	flag.StringVar(&inputHash, "input_hash", "", "Input path for previous Bitextor Murmur Hash plain texts file")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -77,7 +77,7 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 		inputReader, err = giawarc.NewGzOrXzReader("xz", inputHash)
 		defer inputReader.Close()
 		if err != nil{
-			fmt.Println("Error while reader input hashes")
+			fmt.Println("Error while reading input hashes")
 			os.Exit(1)
 		}
 	}
@@ -86,19 +86,18 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 	if outputHash != "" {
 		outputWriter, err = giawarc.NewZipWriter(outputHash, "xz")
 		defer outputWriter.Close()
-
 		if err != nil{
 			fmt.Println("Error while opening output hashes file")
 			os.Exit(1)
 		}
 	}
 
-	proc, err = giawarc.NewWARCPreProcessor(f, tw)
+	proc, err = giawarc.NewWARCPreProcessor(f, tw, inputReader, outputWriter)
 	if err != nil {
 		return
 	}
 
-	proc.Process(inputReader, outputWriter)
+	proc.Process()
 
 	return
 }

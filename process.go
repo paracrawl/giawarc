@@ -18,8 +18,12 @@ import (
 type WARCPreProcessor struct {
 	wf *warc.WARCFile
 	tw TextWriter
-	inputhashes []uint32
-	outputhashes []uint32
+	inputHashes []uint32
+	outputHashes []uint32
+	inputHashReader GzOrXzReader
+	outputHashWriter ZipWriter
+	inputHashing bool
+	outputHashing bool
 	hasher hash.Hash32
 
 	Filename      string
@@ -35,7 +39,7 @@ type WARCPreProcessor struct {
 // Create a preprocessor given a readable buffer containing a (gzipped) WARC file.
 // The second argument, the TextRecord channel is where texts that are found will
 // be sent. It will be closed when the file is done.
-func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter ) (wp *WARCPreProcessor, err error) {
+func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter, inputHashReader GzOrXzReader, outputHashWriter ZipWriter) (wp *WARCPreProcessor, err error) {
 	var p WARCPreProcessor
 	p.ContentCounts = make(map[string]int)
 	p.wf, err = warc.NewWARCFile(rc)
@@ -43,20 +47,24 @@ func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter ) (wp *WARCPreProcessor
 		return
 	}
 	p.tw = tw
+	p.inputHashReader = inputHashReader
+	p.outputHashWriter = outputHashWriter
 	p.hasher = murmur3.New32()
+	p.outputHashing = (outputHashWriter != (ZipWriter{}))
+	p.inputHashing = (inputHashReader != (GzOrXzReader{}))
 	wp = &p
 	return
 }
 
 // Loop through each record and process it
-func (p *WARCPreProcessor) Process(inputHashReader GzOrXzReader, outputHashWriter ZipWriter) {
-	if inputHashReader != (GzOrXzReader{}) {
-		p.inputhashes = inputHashReader.ReadHashes()
+func (p *WARCPreProcessor) Process() {
+	if p.inputHashing {
+		p.inputHashes = p.inputHashReader.ReadHashes()
 	}
 	reader := p.wf.GetReader()
 	reader.Iterate(p.processRecord)
-	if outputHashWriter != (ZipWriter{}) {
-		outputHashWriter.WriteHashes(p.outputhashes)
+	if p.outputHashing {
+		p.outputHashWriter.WriteHashes(p.outputHashes)
 	}
 }
 
@@ -143,18 +151,23 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 	tidied := CleanSpaces(text) // clean up excess whitespace
 
-	// hash clean text
-	p.hasher.Write([]byte (tidied))
-	newhash := p.hasher.Sum32()
+	if p.outputHashing || p.inputHashing {
 
-	for _, hash := range p.inputhashes {
-		// if hash is in input return
-		if hash == newhash {
-			return
+		// hash clean text
+		p.hasher.Write([]byte (tidied))
+		newhash := p.hasher.Sum32()
+		for _, hash := range p.inputHashes {
+			// if hash is in input return
+			if hash == newhash {
+				return
+			}
 		}
+		// store new hash and continue
+		if p.outputHashing {
+			p.outputHashes = append(p.outputHashes, newhash)
+		}
+
 	}
-	// store new hash and continue
-	p.outputhashes = append(p.outputhashes, newhash)
 
 	// record some statistics
 	p.LangRecords += 1
