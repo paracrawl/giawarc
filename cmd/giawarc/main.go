@@ -13,12 +13,14 @@ var outdir string
 var outform string
 var outputHash string
 var inputHash string
+var langId string
 
 func init() {
 	flag.StringVar(&outdir, "o", ".", "Output location")
 	flag.StringVar(&outform, "f", "gzip", "Output format")
 	flag.StringVar(&outputHash, "output_hash", "", "Output path Murmur Hash of plain text")
 	flag.StringVar(&inputHash, "input_hash", "", "Input path for previous Bitextor Murmur Hash plain texts file")
+	flag.StringVar(&langId, "l", "cld2", "Model for language detection: cld2 or cld3")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -92,7 +94,7 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 		}
 	}
 
-	proc, err = giawarc.NewWARCPreProcessor(f, tw, inputReader, outputWriter)
+	proc, err = giawarc.NewWARCPreProcessor(f, tw, inputReader, outputWriter, langId)
 	if err != nil {
 		return
 	}
