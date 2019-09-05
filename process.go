@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"hash"
 
 	"github.com/paracrawl/giawarc/cld2"
 	"github.com/paracrawl/go-warc/warc"
@@ -24,7 +23,6 @@ type WARCPreProcessor struct {
 	outputHashWriter ZipWriter
 	inputHashing bool
 	outputHashing bool
-	hasher hash.Hash32
 
 	Filename      string
 	TextRecords   int            // records claiming to be text
@@ -53,7 +51,6 @@ func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter, inputHashReader GzOrXz
 	p.outputHashing = (outputHashWriter != (ZipWriter{}))
 	p.inputHashes = make(map[uint32]struct{})
 	p.outputHashes = make (map[uint32]struct{})
-	p.hasher = murmur3.New32()
 	wp = &p
 	return
 }
@@ -158,8 +155,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 	if p.outputHashing || p.inputHashing {
 		// hash clean text
-		p.hasher.Write([]byte (tidied))
-		newhash := p.hasher.Sum32()
+		newhash := murmur3.Sum32([]byte (tidied))
 		_, exists := p.inputHashes[newhash]
 		if exists { return }
 		_, exists = p.outputHashes[newhash]
