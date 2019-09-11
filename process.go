@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/paracrawl/giawarc/cld2"
+	"github.com/jmhodges/gocld3/cld3"
 	"github.com/paracrawl/go-warc/warc"
 	"github.com/spaolacci/murmur3"
 )
@@ -17,12 +18,16 @@ import (
 type WARCPreProcessor struct {
 	wf *warc.WARCFile
 	tw TextWriter
+
 	inputHashes map[uint32]struct{}
 	outputHashes map[uint32]struct{}
 	inputHashReader GzOrXzReader
 	outputHashWriter ZipWriter
 	inputHashing bool
 	outputHashing bool
+
+	langDetection string
+	cld3Model cld3.LanguageIdentifier
 
 	Filename      string
 	TextRecords   int            // records claiming to be text
@@ -37,7 +42,7 @@ type WARCPreProcessor struct {
 // Create a preprocessor given a readable buffer containing a (gzipped) WARC file.
 // The second argument, the TextRecord channel is where texts that are found will
 // be sent. It will be closed when the file is done.
-func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter, inputHashReader GzOrXzReader, outputHashWriter ZipWriter) (wp *WARCPreProcessor, err error) {
+func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter, inputHashReader GzOrXzReader, outputHashWriter ZipWriter, langDetection string) (wp *WARCPreProcessor, err error) {
 	var p WARCPreProcessor
 	p.ContentCounts = make(map[string]int)
 	p.wf, err = warc.NewWARCFile(rc)
@@ -45,12 +50,14 @@ func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter, inputHashReader GzOrXz
 		return
 	}
 	p.tw = tw
+
 	p.inputHashReader = inputHashReader
 	p.outputHashWriter = outputHashWriter
 	p.inputHashing = (inputHashReader != (GzOrXzReader{}))
 	p.outputHashing = (outputHashWriter != (ZipWriter{}))
 	p.inputHashes = make(map[uint32]struct{})
 	p.outputHashes = make (map[uint32]struct{})
+	p.langDetection = langDetection
 	wp = &p
 	return
 }
@@ -59,6 +66,15 @@ func NewWARCPreProcessor(rc io.ReadCloser, tw TextWriter, inputHashReader GzOrXz
 func (p *WARCPreProcessor) Process() {
 	if p.inputHashing {
 		p.inputHashes = p.inputHashReader.ReadHashes()
+	}
+	if p.langDetection == "cld3" {
+		langIdModel, err := cld3.NewLanguageIdentifier(0,1024)
+		if err != nil {
+			log.Println("Error creating cld3 model")
+			return
+		}
+		p.cld3Model = langIdModel
+		defer cld3.FreeLanguageIdentifier(p.cld3Model)
 	}
 	reader := p.wf.GetReader()
 	reader.Iterate(p.processRecord)
@@ -146,7 +162,15 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 		log.Printf("Error reading content for %v: %v", uri, err)
 		return
 	}
-	lang, ok := cld2.DetectLang(text)
+	var lang string
+	var ok bool
+	if p.langDetection == "cld3" {
+		res := p.cld3Model.FindLanguage(text)
+		lang = res.Language
+		ok = res.IsReliable
+	} else {
+		lang, ok = cld2.DetectLang(text)
+	}
 	if !ok {
 		return
 	}
