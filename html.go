@@ -18,7 +18,6 @@ var startNL = map[string]bool {
 var endNL = map[string]bool {
 	"p": true,
 	"div": true,
-	"span": true,
 	"li": true,
 	"dd": true,
 	"th": true,
@@ -70,14 +69,13 @@ func HtmlToText(r io.Reader) (b *bytes.Buffer, err error) {
 				buf.WriteString("\n")
 			}
 			lastTok = token.Data
-//			fmt.Fprintf(&buf, "<<<%s>>>\n", token.Data)
 //			buf.WriteString(token.Data)
 		case html.EndTagToken:
 			if _, ok := endNL[token.Data]; ok {
 				buf.WriteString("\n")
-			} else {
-				buf.WriteString(" ")
-			}
+			} // else {
+			//	buf.WriteString(" ")
+			// }
 		case html.SelfClosingTagToken:
 			if _, ok := selfNL[token.Data]; ok {
 				buf.WriteString("\n")
