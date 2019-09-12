@@ -6,8 +6,6 @@ operating system, the latest version can be gotten from:
 
     http://golang.org/dl
 
-Do not use a newer version than 1.10.
-
 Then do,
 
     go get github.com/paracrawl/giawarc/...
