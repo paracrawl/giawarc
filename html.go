@@ -41,6 +41,7 @@ var noText = map[string]bool {
 	"script": true,
 	"noscript": true,
 	"style": true,
+	"": true,
 }
 
 func HtmlToText(r io.Reader) (b *bytes.Buffer, err error) {
