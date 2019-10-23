@@ -6,6 +6,9 @@ import (
 	"log"
 	"os"
 	"time"
+	"io"
+	"bufio"
+	"io/ioutil"
 	"github.com/paracrawl/giawarc"
 )
 
@@ -39,7 +42,13 @@ func init() {
 }
 
 func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error) {
-	f, err := os.Open(filename)
+	var f io.ReadCloser
+	if filename == "-" {
+		reader := bufio.NewReader(os.Stdin)
+		f = ioutil.NopCloser(reader)
+	} else {
+		f, err = os.Open(filename)
+	}
 	if err != nil {
 		return
 	}
