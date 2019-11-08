@@ -65,9 +65,8 @@ func GZlangToBitextorlang(tw giawarc.TextWriter, gzpath string) (err error) {
 	for i := 0; i < nrec || nrec == -1; i++ {
 		z.Multistream(false)
 		err = ProcessRecord(z, tw)
-		if err != nil {
-			log.Fatal(err)
-			return
+		if err == io.EOF {
+			break
 		}
 		err = z.Reset()
 		if err == io.EOF {
