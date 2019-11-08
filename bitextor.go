@@ -85,7 +85,6 @@ type BitextorWriter struct {
 	lang  io.WriteCloser
 	url   io.WriteCloser
 	plain io.WriteCloser
-	id    io.WriteCloser
 }
 
 func NewBitextorWriter(outdir string, writeLang bool) (tw TextWriter, err error) {
@@ -99,7 +98,7 @@ func NewBitextorWriter(outdir string, writeLang bool) (tw TextWriter, err error)
 	if writeLang {
 		lang, err = NewXZipFile(outdir, "lang.xz")
 		if err != nil {
-			return
+			return 
 		}
 	}
 
@@ -114,12 +113,7 @@ func NewBitextorWriter(outdir string, writeLang bool) (tw TextWriter, err error)
 		return
 	}
 
-	id, err := NewXZipFile(outdir, "uuid.xz")
-	if err != nil {
-		return
-	}
-
-	return BitextorWriter{mime: mime, lang: lang, url: url, plain: plain, id: id}, nil
+	return BitextorWriter{mime: mime, lang: lang, url: url, plain: plain}, nil
 }
 
 func (bw BitextorWriter) WriteText(text *TextRecord) (n int, err error) {
@@ -142,9 +136,6 @@ func (bw BitextorWriter) WriteText(text *TextRecord) (n int, err error) {
 		return
 	}
 
-	if err = WriteLine(bw.id, text.RecordId); err != nil {
-		return
-	}
 	return
 }
 
@@ -155,6 +146,5 @@ func (bw BitextorWriter) Close() (err error) {
 	}
 	bw.url.Close()
 	bw.plain.Close()
-	bw.id.Close()
 	return
 }
