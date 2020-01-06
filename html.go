@@ -74,9 +74,9 @@ func HtmlToText(r io.Reader) (b *bytes.Buffer, err error) {
 		case html.EndTagToken:
 			if _, ok := endNL[token.Data]; ok {
 				buf.WriteString("\n")
-			} // else {
-			//	buf.WriteString(" ")
-			// }
+			} else {
+				buf.WriteString(" ")
+			}
 		case html.SelfClosingTagToken:
 			if _, ok := selfNL[token.Data]; ok {
 				buf.WriteString("\n")
