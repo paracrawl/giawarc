@@ -20,7 +20,7 @@ var langId string
 
 func init() {
 	flag.StringVar(&outdir, "o", ".", "Output location")
-	flag.StringVar(&outform, "f", "gzip", "Output format")
+	flag.StringVar(&outform, "f", "bilang", "Output format")
 	flag.StringVar(&outputHash, "output_hash", "", "Output path Murmur Hash of plain text")
 	flag.StringVar(&inputHash, "input_hash", "", "Input path for previous Bitextor Murmur Hash plain texts file")
 	flag.StringVar(&langId, "l", "cld2", "Model for language detection: cld2 or cld3")
@@ -31,6 +31,8 @@ func init() {
 `Formats:
   bitextor
         Output format compatible with bitextor (circa June 2019)
+  bilang
+	Bitextor format split by language
   gzip
         Concatenated gzipped pages 
   gzlang
@@ -57,6 +59,11 @@ func PreProcessFile(filename string) (proc *giawarc.WARCPreProcessor, err error)
 	var tw giawarc.TextWriter
 	if outform == "bitextor" {
 		tw, err = giawarc.NewBitextorWriter(outdir, true)
+		if err != nil {
+			return
+		}
+	} else if outform == "bilang" {
+		tw, err = giawarc.NewBiLangWriter(outdir, true)
 		if err != nil {
 			return
 		}
