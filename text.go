@@ -22,7 +22,12 @@ func init() {
 	text_types = map[string]bool {
 		"text/plain": true,
 		"text/html": true,
+		"text/vnd.wap.wml": true,
 		"application/xml": true,
+		"application/atom+xml": true,
+		"application/opensearchdescription+xml": true,
+		"application/rss+xml": true,
+		"application/xhtml+xml": true,
 	}
 }
 

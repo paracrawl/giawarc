@@ -17,6 +17,7 @@ var outform string
 var outputHash string
 var inputHash string
 var langId string
+var ctstats bool
 
 func init() {
 	flag.StringVar(&outdir, "o", ".", "Output location")
@@ -24,6 +25,7 @@ func init() {
 	flag.StringVar(&outputHash, "output_hash", "", "Output path Murmur Hash of plain text")
 	flag.StringVar(&inputHash, "input_hash", "", "Input path for previous Bitextor Murmur Hash plain texts file")
 	flag.StringVar(&langId, "l", "cld2", "Model for language detection: cld2 or cld3")
+	flag.BoolVar(&ctstats, "cs", false, "Output content type statistics")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] WARCFile\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -145,4 +147,11 @@ func main() {
 	log.Printf("text bytes: %v\n", proc.TextBytes)
 	log.Printf("lang bytes: %v\n", proc.LangBytes)
 	log.Printf("elapsed time: %v\n", elapsed)
+
+	if ctstats {
+		log.Printf("content type statistics:")
+		for _, stat := range proc.ContentTypeStats() {
+			log.Printf("\t%v\t%v", stat.ContentType, stat.Prevalence)
+		}
+	}
 }

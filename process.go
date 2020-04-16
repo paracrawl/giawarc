@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/paracrawl/giawarc/cld2"
-	"github.com/jmhodges/gocld3/cld3"
+//	"github.com/jmhodges/gocld3/cld3"
 	"github.com/paracrawl/go-warc/warc"
 	"github.com/spaolacci/murmur3"
 )
@@ -27,7 +27,7 @@ type WARCPreProcessor struct {
 	outputHashing bool
 
 	langDetection string
-	cld3Model cld3.LanguageIdentifier
+//	cld3Model cld3.LanguageIdentifier
 
 	Filename      string
 	TextRecords   int            // records claiming to be text
@@ -67,6 +67,7 @@ func (p *WARCPreProcessor) Process() {
 	if p.inputHashing {
 		p.inputHashes = p.inputHashReader.ReadHashes()
 	}
+/*
 	if p.langDetection == "cld3" {
 		langIdModel, err := cld3.NewLanguageIdentifier(0,1024)
 		if err != nil {
@@ -75,7 +76,8 @@ func (p *WARCPreProcessor) Process() {
 		}
 		p.cld3Model = langIdModel
 		defer cld3.FreeLanguageIdentifier(p.cld3Model)
-	}
+  }
+*/
 	reader := p.wf.GetReader()
 	reader.Iterate(p.processRecord)
 	if p.outputHashing {
@@ -124,7 +126,7 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	payload := wr.GetPayload()
 	resp, err := http.ReadResponse(bufio.NewReader(payload.GetReader()), nil)
 	reader := payload.GetReader()
-	// var charset string
+
 	if err == nil {
 		content_type, _ = CleanContentType(resp.Header.Get("Content-Type"))
 
@@ -138,20 +140,17 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 
 		// here is where we would do, is it a PDF? transform to text and then continue,
 		// is it a doc? transform to text and continue
-
-		// If it is not text...
-		if !IsText(content_type) {
-			// nothing to do
+		content_type, iszip := IsZip(content_type, uri)
+		if iszip {
+			reader, err = ReadZipPayload(content_type, resp.Body)
+			if err != nil {
+				return
+			}
+		} else if IsText(content_type) {
+			reader = resp.Body
+		} else {
 			return
 		}
-
-
-		reader = resp.Body
-		//text, err := CleanText(resp.Body, charset)
-		//if err != nil {
-		//	log.Printf("Error reading HTTP response body for %v: %v", uri, err)
-		//	return
-		//}
 	}
 
 	p.TextRecords += 1
@@ -159,18 +158,23 @@ func (p *WARCPreProcessor) processRecord(wr *warc.WARCRecord, err error) {
 	// transform to UTF-8 and normalise, strip HTML stuff
 	text, err := CleanText(reader, content_type)
 	if err != nil {
-		log.Printf("Error reading content for %v: %v", uri, err)
+		log.Printf("Error reading content for %v: %v (read %d bytes)", uri, err, len(text))
 		return
 	}
+
 	var lang string
 	var ok bool
+/*
 	if p.langDetection == "cld3" {
 		res := p.cld3Model.FindLanguage(text)
 		lang = res.Language
 		ok = res.IsReliable
 	} else {
+*/
 		lang, ok = cld2.DetectLang(text)
+/*
 	}
+*/
 	if !ok {
 		return
 	}
