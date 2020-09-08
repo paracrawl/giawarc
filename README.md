@@ -51,7 +51,7 @@ There is also an output mode that creates files like this split by language.
 
 [1]: https://github.com/bitextor/bitextor
 
-### giarec
+### giarec
 
 This program reads files created by `giawarc`. It can extract header fields
 and text bodies, optionally encoding them with Base64. In this way, a single
