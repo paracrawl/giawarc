@@ -4,11 +4,12 @@ import (
 	"bytes"
 
 	"golang.org/x/net/html/charset"
-	"golang.org/x/text/unicode/norm"
+	//"golang.org/x/text/unicode/norm"
 
 	//	"github.com/microcosm-cc/bluemonday"
+	"github.com/markusmobius/go-trafilatura"
 
-	"html"
+	//"html"
 	"io"
 	"regexp"
 	"strings"
@@ -100,19 +101,27 @@ func FixInvalidUtf8(reader io.Reader) (string, error) {
 // Clean and sanitize the text, making sure the result is normalised
 // UTF-8 free of any HTML markup
 func CleanText(reader io.Reader, contentType string) (string, error) {
-
+	opts := trafilatura.Options{
+		ExcludeComments: true,
+		IncludeImages:   true,
+		IncludeLinks:    true,
+		EnableLog:       true,
+	}
+	sanitized, err := trafilatura.Extract(reader, opts)
+	if err != nil {
+		return "", err
+	}
+	
 	//	sanitized  := policy.SanitizeReader(reader) // strip out any HTML crap
-	sanitized, err := HtmlToText(reader)
-	if err != nil {
-		return "", err
-	}
-	encoded := Recode(sanitized, contentType) // transform to UTF-8
-	valid, err := FixInvalidUtf8(encoded)     // make sure all UTF-8 is valid
-	if err != nil {
-		return "", err
-	}
-	normed := norm.NFKC.String(valid)        // normalise UTF-8
-	unescaped := html.UnescapeString(normed) // take care of html &xx;
+	// sanitized, err := HtmlToText(reader)
+	//encoded := Recode(sanitized.ContentText, contentType) // transform to UTF-8
+	//valid, err := FixInvalidUtf8(encoded)     // make sure all UTF-8 is valid
+	//if err != nil {
+	//	return "", err
+	//}
+	//normed := norm.NFKC.String(valid)        // normalise UTF-8
+	//unescaped := html.UnescapeString(normed) // take care of html &xx;
 
-	return unescaped, nil
+	//return unescaped, nil
+	return sanitized.ContentText, nil
 }

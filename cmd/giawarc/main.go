@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"io/ioutil"
 	"github.com/paracrawl/giawarc"
+	"github.com/sirupsen/logrus"
 )
 
 var outdir string
@@ -130,6 +131,9 @@ func main() {
 		os.Exit(1)
 	}
 	filename := flag.Arg(0)
+
+	// Remove go-trafilatura logging messages
+	logrus.SetLevel(logrus.ErrorLevel)
 
 	start := time.Now()
 	proc, err := PreProcessFile(filename)
